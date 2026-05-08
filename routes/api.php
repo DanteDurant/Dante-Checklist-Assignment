@@ -7,6 +7,7 @@ use App\Http\Controllers\Api\V1\AuditorController;
 use App\Http\Controllers\Api\V1\AuthController;
 use App\Http\Controllers\Api\V1\ChecklistQuestionController;
 use App\Http\Controllers\Api\V1\ChecklistTemplateController;
+use App\Http\Controllers\Api\V1\Auditor\ChecklistInstanceController;
 
 Route::prefix('v1')->group(function () {
     Route::post('/auth/login', [AuthController::class, 'login']);
@@ -43,6 +44,12 @@ Route::prefix('v1')->group(function () {
 
         Route::middleware('role:auditor')->group(function () {
             Route::get('/auditor/ping', [AuditorController::class, 'ping']);
+
+            Route::get('/auditor/checklist-instances', [ChecklistInstanceController::class, 'index']);
+            Route::post('/auditor/checklist-instances', [ChecklistInstanceController::class, 'store']);
+            Route::get('/auditor/checklist-instances/{instance}', [ChecklistInstanceController::class, 'show']);
+            Route::put('/auditor/checklist-instances/{instance}/answers', [ChecklistInstanceController::class, 'saveProgress']);
+            Route::post('/auditor/checklist-instances/{instance}/complete', [ChecklistInstanceController::class, 'complete']);
         });
     });
 });

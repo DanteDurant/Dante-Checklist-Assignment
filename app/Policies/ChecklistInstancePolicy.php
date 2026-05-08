@@ -2,6 +2,7 @@
 
 namespace App\Policies;
 
+use App\Enums\ChecklistInstanceStatus;
 use App\Models\ChecklistInstance;
 use App\Models\User;
 
@@ -27,7 +28,17 @@ class ChecklistInstancePolicy
             return true;
         }
 
-        return $user->hasRole('auditor') && $instance->auditor_id === $user->id;
+        if (!$user->hasRole('auditor') || $instance->auditor_id !== $user->id) {
+            return false;
+        }
+
+        // Auditors cannot edit once submitted/finalized.
+        return in_array($instance->status, [ChecklistInstanceStatus::Draft, ChecklistInstanceStatus::InProgress], true);
+    }
+
+    public function complete(User $user, ChecklistInstance $instance): bool
+    {
+        return $this->update($user, $instance);
     }
 }
 
