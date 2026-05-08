@@ -5,6 +5,7 @@ use App\Http\Controllers\Web\Admin\DashboardController as AdminDashboardControll
 use App\Http\Controllers\Web\Admin\ChecklistTemplateController as AdminChecklistTemplateController;
 use App\Http\Controllers\Web\Admin\ChecklistQuestionController as AdminChecklistQuestionController;
 use App\Http\Controllers\Web\Auditor\DashboardController as AuditorDashboardController;
+use App\Http\Controllers\Web\Auditor\ChecklistInstanceController as AuditorChecklistInstanceController;
 use App\Http\Controllers\Web\Auth\LoginController;
 use App\Http\Controllers\Web\HomeController;
 
@@ -35,4 +36,7 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
 
 Route::middleware(['auth', 'role:auditor'])->prefix('auditor')->name('auditor.')->group(function () {
     Route::get('/dashboard', AuditorDashboardController::class)->name('dashboard');
+
+    Route::get('/start', [AuditorChecklistInstanceController::class, 'start'])->name('start');
+    Route::get('/instances/{instance}', [AuditorChecklistInstanceController::class, 'show'])->name('instances.show');
 });
