@@ -1,66 +1,198 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Compliance Checklist Assessment (Laravel 11)
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+Laravel 11 REST API for managing compliance checklist templates (admin) and completing checklist assessments (auditor).
 
-## About Laravel
+- **Authentication**: Laravel Sanctum (token-based)
+- **Authorization**: Spatie Laravel Permission (roles + middleware) + Laravel Policies
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+## Setup instructions
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+### Requirements
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+- PHP **8.3+**
+- Composer
+- SQLite (default) or MySQL/Postgres
 
-## Learning Laravel
+### Install dependencies
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+```bash
+composer install
+cp .env.example .env
+php artisan key:generate
+```
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+## Environment setup
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+This project defaults to **SQLite**.
 
-## Laravel Sponsors
+### SQLite (recommended for local/dev)
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+```bash
+touch database/database.sqlite
+```
 
-### Premium Partners
+In `.env`:
 
-- **[Vehikl](https://vehikl.com/)**
-- **[Tighten Co.](https://tighten.co)**
-- **[WebReinvent](https://webreinvent.com/)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel/)**
-- **[Cyber-Duck](https://cyber-duck.co.uk)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Jump24](https://jump24.co.uk)**
-- **[Redberry](https://redberry.international/laravel/)**
-- **[Active Logic](https://activelogic.com)**
-- **[byte5](https://byte5.de)**
-- **[OP.GG](https://op.gg)**
+```env
+DB_CONNECTION=sqlite
+DB_DATABASE=/absolute/path/to/database/database.sqlite
+```
 
-## Contributing
+> If you omit `DB_DATABASE`, Laravel will default to `database/database.sqlite`.
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+## Migration steps
 
-## Code of Conduct
+```bash
+php artisan migrate
+```
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+## Seed steps
 
-## Security Vulnerabilities
+```bash
+php artisan db:seed
+```
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+Seeders include:
+- `Database\\Seeders\\RolesAndUsersSeeder`: roles + example users
+- `Database\\Seeders\\DemoChecklistSeeder`: demo template/questions + a sample instance/answers
 
-## License
+## Test credentials
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+Seeded users (from `database/seeders/RolesAndUsersSeeder.php`):
+
+- **Admin**: `admin@example.com` / `password`
+- **Auditor**: `auditor@example.com` / `password`
+
+## API authentication (Sanctum)
+
+### Login
+
+`POST /api/v1/auth/login`
+
+Body:
+
+```json
+{
+  "email": "admin@example.com",
+  "password": "password",
+  "device_name": "local"
+}
+```
+
+Response:
+
+```json
+{
+  "data": {
+    "token": "<plain-text-token>",
+    "token_type": "Bearer",
+    "user": {
+      "id": 1,
+      "name": "Admin User",
+      "email": "admin@example.com",
+      "roles": ["admin"],
+      "permissions": []
+    }
+  }
+}
+```
+
+Send the token on subsequent requests:
+
+```http
+Authorization: Bearer <plain-text-token>
+```
+
+### Logout
+
+`POST /api/v1/auth/logout` (requires `auth:sanctum`)
+
+## Running the application
+
+```bash
+php artisan serve
+```
+
+## Running tests
+
+This project uses **PHPUnit** (already configured).
+
+```bash
+php artisan test
+```
+
+## Project architecture overview
+
+High-level layering (clean architecture style):
+
+- **HTTP layer**
+  - Controllers: `app/Http/Controllers/Api/V1/**`
+  - Validation: `app/Http/Requests/**` (Form Requests)
+  - Serialization: `app/Http/Resources/**` (API Resources)
+
+- **Application layer**
+  - Use-case services and query objects: `app/Application/**`
+  - Transactions and invariants live here (thin controllers)
+  - Examples:
+    - `app/Application/Auth/Services/TokenAuthService.php`
+    - `app/Application/ChecklistTemplates/Services/ChecklistTemplateService.php`
+    - `app/Application/Assessments/Services/ChecklistCompletionService.php`
+    - `app/Application/Reporting/Queries/ChecklistInstanceReportQuery.php`
+
+- **Domain model**
+  - Eloquent models: `app/Models/**`
+  - Enums: `app/Enums/**` (status/type casting)
+
+- **Authorization**
+  - Spatie middleware aliases registered in `bootstrap/app.php`
+  - Policies registered via `Gate::policy(...)` in `app/Providers/AppServiceProvider.php`
+
+## API documentation summary
+
+All endpoints are prefixed with `/api/v1`.
+
+### Auth
+
+- `POST /auth/login`
+- `POST /auth/logout` (auth)
+- `GET /me` (auth)
+
+### Admin (requires `auth:sanctum` + `role:admin`)
+
+- `GET /admin/ping`
+
+Templates:
+- `GET /checklist-templates`
+- `POST /checklist-templates`
+- `GET /checklist-templates/{template}`
+- `PATCH /checklist-templates/{template}`
+- `DELETE /checklist-templates/{template}`
+
+Questions (nested + shallow):
+- `GET /checklist-templates/{template}/questions`
+- `POST /checklist-templates/{template}/questions`
+- `GET /questions/{question}`
+- `PATCH /questions/{question}`
+- `DELETE /questions/{question}`
+
+Reporting:
+- `GET /admin/reports/checklist-instances`
+  - Filters: `date_from`, `date_to`, `template_id`, `auditor_id`
+  - Optional: `q` (search), `per_page`
+
+### Auditor (requires `auth:sanctum` + `role:auditor`)
+
+- `GET /auditor/ping`
+
+Checklist completion flow:
+- `GET /auditor/checklist-instances`
+- `POST /auditor/checklist-instances` (start instance)
+- `GET /auditor/checklist-instances/{instance}`
+- `PUT /auditor/checklist-instances/{instance}/answers` (save draft progress)
+- `POST /auditor/checklist-instances/{instance}/complete` (submit + lock)
+
+## Notes
+
+- Templates and instances include a `public_id` ULID intended for safe external exposure.
+- Feature tests live in `tests/Feature` and cover auth, roles, template CRUD, completion rules, and reporting filters.
+
