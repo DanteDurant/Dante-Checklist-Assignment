@@ -53,13 +53,38 @@ document.addEventListener('submit', (event) => {
 // Mobile navigation toggle
 document.addEventListener('click', (event) => {
     const button = event.target?.closest?.('[data-mobile-menu-button]');
-    if (!button) return;
-
     const menu = document.querySelector('[data-mobile-menu]');
     if (!menu) return;
 
+    // Toggle when clicking the hamburger button.
+    if (button) {
+        const isOpen = !menu.classList.contains('hidden');
+        menu.classList.toggle('hidden', isOpen);
+        button.setAttribute('aria-expanded', String(!isOpen));
+        return;
+    }
+
+    // Close when clicking outside the menu + button.
     const isOpen = !menu.classList.contains('hidden');
-    menu.classList.toggle('hidden', isOpen);
-    button.setAttribute('aria-expanded', String(!isOpen));
+    if (!isOpen) return;
+
+    const anyButton = document.querySelector('[data-mobile-menu-button]');
+    const clickedInsideMenu = !!event.target?.closest?.('[data-mobile-menu]');
+    const clickedButton = !!event.target?.closest?.('[data-mobile-menu-button]');
+
+    if (!clickedInsideMenu && !clickedButton) {
+        menu.classList.add('hidden');
+        anyButton?.setAttribute('aria-expanded', 'false');
+    }
+});
+
+document.addEventListener('keydown', (event) => {
+    if (event.key !== 'Escape') return;
+
+    const menu = document.querySelector('[data-mobile-menu]');
+    if (!menu || menu.classList.contains('hidden')) return;
+
+    menu.classList.add('hidden');
+    document.querySelector('[data-mobile-menu-button]')?.setAttribute('aria-expanded', 'false');
 });
 

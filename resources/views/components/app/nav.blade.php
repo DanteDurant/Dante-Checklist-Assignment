@@ -8,7 +8,7 @@
             @auth
                 <nav class="hidden items-center gap-3 sm:flex">
                     @if (auth()->user()->hasRole('admin'))
-                        <x-app.nav-link :href="route('admin.dashboard')" :active="request()->routeIs('admin.*')">
+                        <x-app.nav-link :href="route('admin.dashboard')" :active="request()->routeIs('admin.dashboard')">
                             Dashboard
                         </x-app.nav-link>
 
@@ -66,14 +66,20 @@
             <div class="hidden border-t border-slate-200 bg-white" id="mobileNav" data-mobile-menu>
                 <div class="space-y-1 px-4 py-3">
                     @if (auth()->user()->hasRole('admin'))
-                        <x-app.nav-link :href="route('admin.dashboard')" :active="request()->routeIs('admin.dashboard')">Dashboard</x-app.nav-link>
-                        <x-app.nav-link :href="route('admin.templates.index')" :active="request()->routeIs('admin.templates.*')">Templates</x-app.nav-link>
-                        <x-app.nav-link :href="route('admin.reports.checklist_instances')" :active="request()->routeIs('admin.reports.*')">Reports</x-app.nav-link>
+                        <x-app.nav-link class="block w-full" :href="route('admin.dashboard')" :active="request()->routeIs('admin.dashboard')">Dashboard</x-app.nav-link>
+                        <x-app.nav-link class="block w-full" :href="route('admin.templates.index')" :active="request()->routeIs('admin.templates.*')">Templates</x-app.nav-link>
+                        <x-app.nav-link class="block w-full" :href="route('admin.reports.checklist_instances')" :active="request()->routeIs('admin.reports.*')">Reports</x-app.nav-link>
                     @endif
 
                     @if (auth()->user()->hasRole('auditor'))
-                        <x-app.nav-link :href="route('auditor.dashboard')" :active="request()->routeIs('auditor.*')">Dashboard</x-app.nav-link>
+                        <x-app.nav-link class="block w-full" :href="route('auditor.dashboard')" :active="request()->routeIs('auditor.*')">Dashboard</x-app.nav-link>
                     @endif
+                </div>
+                <div class="border-t border-slate-200 px-4 py-3">
+                    <form method="POST" action="{{ route('logout') }}">
+                        @csrf
+                        <x-ui.button type="submit" variant="secondary" class="w-full">Logout</x-ui.button>
+                    </form>
                 </div>
                 <div class="border-t border-slate-200 px-4 py-3">
                     <div class="text-sm font-medium text-slate-900">{{ auth()->user()->name }}</div>
