@@ -45,29 +45,23 @@ class ChecklistQuestionController extends Controller
         return new ChecklistQuestionResource($question);
     }
 
-    public function show(ChecklistTemplate $template, ChecklistQuestion $question): ChecklistQuestionResource
+    public function show(ChecklistQuestion $question): ChecklistQuestionResource
     {
-        $this->authorize('view', $template);
-
-        abort_unless($question->checklist_template_id === $template->id, 404);
+        $this->authorize('view', $question->template);
 
         return new ChecklistQuestionResource($question);
     }
 
-    public function update(UpdateChecklistQuestionRequest $request, ChecklistTemplate $template, ChecklistQuestion $question): ChecklistQuestionResource
+    public function update(UpdateChecklistQuestionRequest $request, ChecklistQuestion $question): ChecklistQuestionResource
     {
-        abort_unless($question->checklist_template_id === $template->id, 404);
-
         $question = $this->service->update($question, $request->validated());
 
         return new ChecklistQuestionResource($question);
     }
 
-    public function destroy(ChecklistTemplate $template, ChecklistQuestion $question): JsonResponse
+    public function destroy(ChecklistQuestion $question): JsonResponse
     {
-        $this->authorize('update', $template);
-
-        abort_unless($question->checklist_template_id === $template->id, 404);
+        $this->authorize('update', $question->template);
 
         $this->service->delete($question);
 

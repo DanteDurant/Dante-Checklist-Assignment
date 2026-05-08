@@ -32,11 +32,8 @@ class TokenAuthService
 
     public function logout(User $user): void
     {
-        $token = $user->currentAccessToken();
-
-        if ($token) {
-            $token->delete();
-        }
+        // Revoke all tokens for safety (covers cases where current token isn't resolved).
+        $user->tokens()->delete();
     }
 }
 

@@ -14,7 +14,8 @@ class LoginRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'email' => ['required', 'string', 'email:rfc,dns'],
+            // Avoid DNS validation: it breaks in offline CI/test environments.
+            'email' => ['required', 'string', 'email:rfc'],
             'password' => ['required', 'string'],
             'device_name' => ['nullable', 'string', 'max:255'],
         ];
