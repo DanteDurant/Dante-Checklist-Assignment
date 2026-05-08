@@ -50,3 +50,16 @@ document.addEventListener('submit', (event) => {
     submitButtons.forEach((btn) => setButtonLoading(btn, true));
 });
 
+// Mobile navigation toggle
+document.addEventListener('click', (event) => {
+    const button = event.target?.closest?.('[data-mobile-menu-button]');
+    if (!button) return;
+
+    const menu = document.querySelector('[data-mobile-menu]');
+    if (!menu) return;
+
+    const isOpen = !menu.classList.contains('hidden');
+    menu.classList.toggle('hidden', isOpen);
+    button.setAttribute('aria-expanded', String(!isOpen));
+});
+

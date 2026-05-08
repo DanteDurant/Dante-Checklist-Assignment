@@ -18,43 +18,85 @@
 
         <div class="lg:col-span-2">
             <x-ui.card title="Your checklist instances" description="Assigned to you.">
-                <x-ui.table :headers="['Template', 'Status', 'Submitted', 'Action']">
+                <div class="space-y-3 sm:hidden">
                     @forelse ($instances as $i)
                         @php
                             $isEditable = in_array($i->status->value, ['draft', 'in_progress'], true);
                         @endphp
-                        <tr>
-                            <td class="px-4 py-3 text-sm font-medium text-slate-900">
-                                {{ $i->template?->name ?? ('Template #'.$i->checklist_template_id) }}
-                            </td>
-                            <td class="px-4 py-3 text-sm">
-                                @if ($isEditable)
-                                    <span class="rounded-full bg-amber-50 px-2 py-1 text-xs font-semibold text-amber-800 ring-1 ring-inset ring-amber-200">
-                                        {{ $i->status->value === 'draft' ? 'Draft' : 'In progress' }}
-                                    </span>
-                                @else
-                                    <span class="rounded-full bg-emerald-50 px-2 py-1 text-xs font-semibold text-emerald-800 ring-1 ring-inset ring-emerald-200">
-                                        Completed
-                                    </span>
-                                @endif
-                            </td>
-                            <td class="px-4 py-3 text-sm text-slate-600">
-                                {{ $i->submitted_at?->toDateTimeString() ?? '—' }}
-                            </td>
-                            <td class="px-4 py-3 text-sm">
-                                @if ($isEditable)
-                                    <x-ui.button :href="route('auditor.instances.show', $i)" variant="secondary">Continue</x-ui.button>
-                                @else
-                                    <x-ui.button :href="route('auditor.instances.show', $i)" variant="secondary">View</x-ui.button>
-                                @endif
-                            </td>
-                        </tr>
+                        <x-ui.card>
+                            <div class="flex items-start justify-between gap-4">
+                                <div class="min-w-0">
+                                    <div class="truncate text-sm font-semibold text-slate-900">
+                                        {{ $i->template?->name ?? ('Template #'.$i->checklist_template_id) }}
+                                    </div>
+                                    <div class="mt-2 flex flex-wrap items-center gap-2">
+                                        @if ($isEditable)
+                                            <span class="rounded-full bg-amber-50 px-2 py-1 text-xs font-semibold text-amber-800 ring-1 ring-inset ring-amber-200">
+                                                {{ $i->status->value === 'draft' ? 'Draft' : 'In progress' }}
+                                            </span>
+                                        @else
+                                            <span class="rounded-full bg-emerald-50 px-2 py-1 text-xs font-semibold text-emerald-800 ring-1 ring-inset ring-emerald-200">
+                                                Completed
+                                            </span>
+                                        @endif
+                                        <span class="text-xs text-slate-500">
+                                            Submitted: {{ $i->submitted_at?->toDateTimeString() ?? '—' }}
+                                        </span>
+                                    </div>
+                                </div>
+                                <div class="shrink-0">
+                                    @if ($isEditable)
+                                        <x-ui.button :href="route('auditor.instances.show', $i)" variant="secondary">Continue</x-ui.button>
+                                    @else
+                                        <x-ui.button :href="route('auditor.instances.show', $i)" variant="secondary">View</x-ui.button>
+                                    @endif
+                                </div>
+                            </div>
+                        </x-ui.card>
                     @empty
-                        <tr>
-                            <td colspan="4" class="px-4 py-6 text-sm text-slate-500">No instances yet.</td>
-                        </tr>
+                        <x-ui.empty-state title="No instances" message="You don’t have any checklist instances yet." />
                     @endforelse
-                </x-ui.table>
+                </div>
+
+                <div class="hidden sm:block">
+                    <x-ui.table :headers="['Template', 'Status', 'Submitted', 'Action']">
+                        @forelse ($instances as $i)
+                            @php
+                                $isEditable = in_array($i->status->value, ['draft', 'in_progress'], true);
+                            @endphp
+                            <tr>
+                                <td class="px-4 py-3 text-sm font-medium text-slate-900">
+                                    {{ $i->template?->name ?? ('Template #'.$i->checklist_template_id) }}
+                                </td>
+                                <td class="px-4 py-3 text-sm">
+                                    @if ($isEditable)
+                                        <span class="rounded-full bg-amber-50 px-2 py-1 text-xs font-semibold text-amber-800 ring-1 ring-inset ring-amber-200">
+                                            {{ $i->status->value === 'draft' ? 'Draft' : 'In progress' }}
+                                        </span>
+                                    @else
+                                        <span class="rounded-full bg-emerald-50 px-2 py-1 text-xs font-semibold text-emerald-800 ring-1 ring-inset ring-emerald-200">
+                                            Completed
+                                        </span>
+                                    @endif
+                                </td>
+                                <td class="px-4 py-3 text-sm text-slate-600">
+                                    {{ $i->submitted_at?->toDateTimeString() ?? '—' }}
+                                </td>
+                                <td class="px-4 py-3 text-sm">
+                                    @if ($isEditable)
+                                        <x-ui.button :href="route('auditor.instances.show', $i)" variant="secondary">Continue</x-ui.button>
+                                    @else
+                                        <x-ui.button :href="route('auditor.instances.show', $i)" variant="secondary">View</x-ui.button>
+                                    @endif
+                                </td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="4" class="px-4 py-6 text-sm text-slate-500">No instances yet.</td>
+                            </tr>
+                        @endforelse
+                    </x-ui.table>
+                </div>
             </x-ui.card>
         </div>
     </div>

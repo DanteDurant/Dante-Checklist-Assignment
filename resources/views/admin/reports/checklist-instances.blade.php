@@ -39,30 +39,65 @@
 
         <div class="mt-6">
             <x-ui.card title="Results" description="Template, auditor, completion date, status.">
-                <x-ui.table :headers="['Template', 'Auditor', 'Completion date', 'Status']">
+                <div class="space-y-3 sm:hidden">
                     @forelse ($results as $row)
-                        <tr>
-                            <td class="px-4 py-3 text-sm font-medium text-slate-900">
-                                {{ $row->template?->name ?? ('Template #'.$row->checklist_template_id) }}
-                            </td>
-                            <td class="px-4 py-3 text-sm text-slate-700">
-                                {{ $row->auditor?->name ?? ('User #'.$row->auditor_id) }}
-                            </td>
-                            <td class="px-4 py-3 text-sm text-slate-700">
-                                {{ $row->submitted_at?->toDateTimeString() ?? '—' }}
-                            </td>
-                            <td class="px-4 py-3 text-sm text-slate-700">
-                                {{ $row->status->value }}
-                            </td>
-                        </tr>
+                        <x-ui.card>
+                            <div class="space-y-2">
+                                <div>
+                                    <div class="text-xs font-semibold uppercase tracking-wide text-slate-500">Template</div>
+                                    <div class="text-sm font-semibold text-slate-900">
+                                        {{ $row->template?->name ?? ('Template #'.$row->checklist_template_id) }}
+                                    </div>
+                                </div>
+                                <div class="grid grid-cols-1 gap-2">
+                                    <div>
+                                        <div class="text-xs font-semibold uppercase tracking-wide text-slate-500">Auditor</div>
+                                        <div class="text-sm text-slate-700">
+                                            {{ $row->auditor?->name ?? ('User #'.$row->auditor_id) }}
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <div class="text-xs font-semibold uppercase tracking-wide text-slate-500">Completion date</div>
+                                        <div class="text-sm text-slate-700">{{ $row->submitted_at?->toDateTimeString() ?? '—' }}</div>
+                                    </div>
+                                    <div>
+                                        <div class="text-xs font-semibold uppercase tracking-wide text-slate-500">Status</div>
+                                        <div class="text-sm text-slate-700">{{ $row->status->value }}</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </x-ui.card>
                     @empty
-                        <tr>
-                            <td colspan="4" class="px-4 py-6">
-                                <x-ui.empty-state title="No results" message="Try adjusting your filters." />
-                            </td>
-                        </tr>
+                        <x-ui.empty-state title="No results" message="Try adjusting your filters." />
                     @endforelse
-                </x-ui.table>
+                </div>
+
+                <div class="hidden sm:block">
+                    <x-ui.table :headers="['Template', 'Auditor', 'Completion date', 'Status']">
+                        @forelse ($results as $row)
+                            <tr>
+                                <td class="px-4 py-3 text-sm font-medium text-slate-900">
+                                    {{ $row->template?->name ?? ('Template #'.$row->checklist_template_id) }}
+                                </td>
+                                <td class="px-4 py-3 text-sm text-slate-700">
+                                    {{ $row->auditor?->name ?? ('User #'.$row->auditor_id) }}
+                                </td>
+                                <td class="px-4 py-3 text-sm text-slate-700">
+                                    {{ $row->submitted_at?->toDateTimeString() ?? '—' }}
+                                </td>
+                                <td class="px-4 py-3 text-sm text-slate-700">
+                                    {{ $row->status->value }}
+                                </td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="4" class="px-4 py-6">
+                                    <x-ui.empty-state title="No results" message="Try adjusting your filters." />
+                                </td>
+                            </tr>
+                        @endforelse
+                    </x-ui.table>
+                </div>
 
                 <div class="mt-4">
                     {{ $results->links() }}

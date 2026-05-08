@@ -9,11 +9,11 @@
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
-<body class="min-h-screen bg-slate-50 text-slate-900">
-<div class="min-h-screen">
+<body class="min-h-screen overflow-x-hidden bg-slate-50 text-slate-900">
+<div class="min-h-screen overflow-x-hidden">
     <x-app.nav />
 
-    <main class="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+    <main class="mx-auto max-w-7xl px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
         <x-ui.flash type="success" :message="session('status')" />
         <x-ui.flash type="error" :message="session('error')" />
 
