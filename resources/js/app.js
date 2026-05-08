@@ -88,3 +88,25 @@ document.addEventListener('keydown', (event) => {
     document.querySelector('[data-mobile-menu-button]')?.setAttribute('aria-expanded', 'false');
 });
 
+// Copy-to-clipboard buttons (opt-in via data-copy)
+document.addEventListener('click', async (event) => {
+    const button = event.target?.closest?.('[data-copy]');
+    if (!button) return;
+
+    const text = button.getAttribute('data-copy') || '';
+    if (!text) return;
+
+    const original = button.textContent?.trim() || 'Copy';
+    const label = button.getAttribute('data-copy-label') || 'Value';
+
+    try {
+        await navigator.clipboard.writeText(text);
+        button.textContent = 'Copied';
+        setTimeout(() => {
+            button.textContent = original;
+        }, 1200);
+    } catch (e) {
+        window.prompt(`Copy ${label}:`, text);
+    }
+});
+

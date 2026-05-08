@@ -19,12 +19,9 @@
     <div class="mt-6 grid gap-6 lg:grid-cols-3">
         <x-ui.card title="Navigation" description="Jump to key admin modules.">
             <div class="flex flex-wrap gap-2">
-                <x-ui.button :href="url('/api/v1/checklist-templates')" variant="secondary">Checklist Templates</x-ui.button>
-                <x-ui.button :href="url('/api/v1/admin/reports/checklist-instances')" variant="secondary">Reports</x-ui.button>
+                <x-ui.button :href="route('admin.templates.index')" variant="secondary">Templates</x-ui.button>
+                <x-ui.button :href="route('admin.reports.checklist_instances')" variant="secondary">Reports</x-ui.button>
             </div>
-            <p class="mt-3 text-sm text-slate-500">
-                These links currently point to API endpoints (JSON). You can swap them to Blade pages later.
-            </p>
         </x-ui.card>
 
         <div class="lg:col-span-2">
