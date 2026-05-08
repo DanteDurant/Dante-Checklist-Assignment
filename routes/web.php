@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Web\Admin\DashboardController as AdminDashboardController;
 use App\Http\Controllers\Web\Admin\ChecklistTemplateController as AdminChecklistTemplateController;
 use App\Http\Controllers\Web\Admin\ChecklistQuestionController as AdminChecklistQuestionController;
+use App\Http\Controllers\Web\Admin\ReportsController as AdminReportsController;
 use App\Http\Controllers\Web\Auditor\DashboardController as AuditorDashboardController;
 use App\Http\Controllers\Web\Auditor\ChecklistInstanceController as AuditorChecklistInstanceController;
 use App\Http\Controllers\Web\Auth\LoginController;
@@ -32,6 +33,9 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
 
     Route::delete('/templates/{template}/questions/{question}', [AdminChecklistQuestionController::class, 'destroy'])
         ->name('templates.questions.destroy');
+
+    Route::get('/reports/checklist-instances', [AdminReportsController::class, 'checklistInstances'])
+        ->name('reports.checklist_instances');
 });
 
 Route::middleware(['auth', 'role:auditor'])->prefix('auditor')->name('auditor.')->group(function () {
