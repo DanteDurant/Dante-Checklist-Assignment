@@ -1,31 +1,49 @@
 <x-layouts.admin title="Admin" heading="Dashboard">
-    <div class="grid gap-6 lg:grid-cols-2">
-        <x-ui.card title="Quick links">
+    <div class="grid gap-6 lg:grid-cols-3">
+        <x-ui.card title="Total templates">
+            <div class="text-3xl font-semibold text-slate-900">{{ number_format($totalTemplates) }}</div>
+            <p class="mt-1 text-sm text-slate-500">Checklist templates in the system.</p>
+        </x-ui.card>
+
+        <x-ui.card title="Total audits completed">
+            <div class="text-3xl font-semibold text-slate-900">{{ number_format($totalAuditsCompleted) }}</div>
+            <p class="mt-1 text-sm text-slate-500">Submitted/approved checklist instances.</p>
+        </x-ui.card>
+
+        <x-ui.card title="Total auditors">
+            <div class="text-3xl font-semibold text-slate-900">{{ number_format($totalAuditors) }}</div>
+            <p class="mt-1 text-sm text-slate-500">Users with the auditor role.</p>
+        </x-ui.card>
+    </div>
+
+    <div class="mt-6 grid gap-6 lg:grid-cols-3">
+        <x-ui.card title="Navigation" description="Jump to key admin modules.">
             <div class="flex flex-wrap gap-2">
-                <x-ui.button :href="url('/api/v1/admin/ping')" variant="secondary">Admin API ping</x-ui.button>
-                <x-ui.button :href="url('/api/v1/checklist-templates')" variant="secondary">Templates API</x-ui.button>
-                <x-ui.button :href="url('/api/v1/admin/reports/checklist-instances')" variant="secondary">Reports API</x-ui.button>
+                <x-ui.button :href="url('/api/v1/checklist-templates')" variant="secondary">Checklist Templates</x-ui.button>
+                <x-ui.button :href="url('/api/v1/admin/reports/checklist-instances')" variant="secondary">Reports</x-ui.button>
             </div>
             <p class="mt-3 text-sm text-slate-500">
-                These links hit API routes; use Postman/curl with a token for JSON.
+                These links currently point to API endpoints (JSON). You can swap them to Blade pages later.
             </p>
         </x-ui.card>
 
-        <x-ui.card title="Recent templates" description="Latest 10 templates (from DB).">
-            <x-ui.table :headers="['Title', 'Status', 'Questions']">
-                @forelse ($templates as $t)
-                    <tr>
-                        <td class="px-4 py-3 text-sm font-medium text-slate-900">{{ $t->name }}</td>
-                        <td class="px-4 py-3 text-sm text-slate-600">{{ $t->status->value }}</td>
-                        <td class="px-4 py-3 text-sm text-slate-600">{{ $t->questions_count }}</td>
-                    </tr>
-                @empty
-                    <tr>
-                        <td colspan="3" class="px-4 py-6 text-sm text-slate-500">No templates yet.</td>
-                    </tr>
-                @endforelse
-            </x-ui.table>
-        </x-ui.card>
+        <div class="lg:col-span-2">
+            <x-ui.card title="Recent templates" description="Latest 10 templates (from DB).">
+                <x-ui.table :headers="['Title', 'Status', 'Questions']">
+                    @forelse ($templates as $t)
+                        <tr>
+                            <td class="px-4 py-3 text-sm font-medium text-slate-900">{{ $t->name }}</td>
+                            <td class="px-4 py-3 text-sm text-slate-600">{{ $t->status->value }}</td>
+                            <td class="px-4 py-3 text-sm text-slate-600">{{ $t->questions_count }}</td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="3" class="px-4 py-6 text-sm text-slate-500">No templates yet.</td>
+                        </tr>
+                    @endforelse
+                </x-ui.table>
+            </x-ui.card>
+        </div>
     </div>
 </x-layouts.admin>
 
