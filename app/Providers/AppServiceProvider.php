@@ -2,6 +2,11 @@
 
 namespace App\Providers;
 
+use App\Models\ChecklistInstance;
+use App\Models\ChecklistTemplate;
+use App\Policies\ChecklistInstancePolicy;
+use App\Policies\ChecklistTemplatePolicy;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -19,6 +24,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        Gate::policy(ChecklistTemplate::class, ChecklistTemplatePolicy::class);
+        Gate::policy(ChecklistInstance::class, ChecklistInstancePolicy::class);
     }
 }
