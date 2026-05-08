@@ -50,15 +50,9 @@
 
                             <div class="mt-3">
                                 @if ($q->type->value === 'text')
-                                    <input name="answers[{{ $q->id }}]" type="text"
-                                           value="{{ $textValue }}"
-                                           @disabled(!$isEditable)
-                                           class="w-full rounded-md border border-slate-300 px-3 py-2 text-sm shadow-sm focus:border-slate-900 focus:outline-none focus:ring-1 focus:ring-slate-900" />
+                                    <x-ui.input name="answers[{{ $q->id }}]" type="text" value="{{ $textValue }}" @disabled(!$isEditable) />
                                 @elseif ($q->type->value === 'number')
-                                    <input name="answers[{{ $q->id }}]" type="number" step="any"
-                                           value="{{ $numberValue }}"
-                                           @disabled(!$isEditable)
-                                           class="w-full rounded-md border border-slate-300 px-3 py-2 text-sm shadow-sm focus:border-slate-900 focus:outline-none focus:ring-1 focus:ring-slate-900" />
+                                    <x-ui.input name="answers[{{ $q->id }}]" type="number" step="any" value="{{ $numberValue }}" @disabled(!$isEditable) />
                                 @elseif ($q->type->value === 'boolean')
                                     <div class="flex items-center gap-2">
                                         <input type="hidden" name="answers[{{ $q->id }}]" value="0" />
@@ -69,9 +63,7 @@
                                         <label for="q_{{ $q->id }}" class="text-sm text-slate-700">Yes</label>
                                     </div>
                                 @else
-                                    <textarea name="answers[{{ $q->id }}]" rows="3"
-                                              @disabled(!$isEditable)
-                                              class="w-full rounded-md border border-slate-300 px-3 py-2 text-sm shadow-sm focus:border-slate-900 focus:outline-none focus:ring-1 focus:ring-slate-900">{{ old("answers.$q->id", json_encode($stored)) }}</textarea>
+                                    <x-ui.textarea name="answers[{{ $q->id }}]" rows="3" @disabled(!$isEditable)>{{ old("answers.$q->id", json_encode($stored)) }}</x-ui.textarea>
                                     <p class="mt-1 text-xs text-slate-500">
                                         This answer type is not fully implemented in Blade yet.
                                     </p>

@@ -14,10 +14,11 @@
     <x-app.nav />
 
     <main class="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-        @if (session('status'))
-            <div class="mb-6 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-emerald-900">
-                {{ session('status') }}
-            </div>
+        <x-ui.flash type="success" :message="session('status')" />
+        <x-ui.flash type="error" :message="session('error')" />
+
+        @if ($errors->any())
+            <x-ui.flash type="error" message="Please review the highlighted fields and try again." />
         @endif
 
         {{ $slot }}

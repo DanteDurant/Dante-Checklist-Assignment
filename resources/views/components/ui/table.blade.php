@@ -3,7 +3,8 @@
 ])
 
 <div class="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
-    <table class="min-w-full divide-y divide-slate-200">
+    <div class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-slate-200">
         @if (!empty($headers))
             <thead class="bg-slate-50">
             <tr>
@@ -19,6 +20,7 @@
         <tbody class="divide-y divide-slate-200">
         {{ $slot }}
         </tbody>
-    </table>
+        </table>
+    </div>
 </div>
 

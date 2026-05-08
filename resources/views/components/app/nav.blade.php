@@ -9,13 +9,21 @@
                 <nav class="hidden items-center gap-3 sm:flex">
                     @if (auth()->user()->hasRole('admin'))
                         <x-app.nav-link :href="route('admin.dashboard')" :active="request()->routeIs('admin.*')">
-                            Admin
+                            Dashboard
+                        </x-app.nav-link>
+
+                        <x-app.nav-link :href="route('admin.templates.index')" :active="request()->routeIs('admin.templates.*')">
+                            Templates
+                        </x-app.nav-link>
+
+                        <x-app.nav-link :href="route('admin.reports.checklist_instances')" :active="request()->routeIs('admin.reports.*')">
+                            Reports
                         </x-app.nav-link>
                     @endif
 
                     @if (auth()->user()->hasRole('auditor'))
                         <x-app.nav-link :href="route('auditor.dashboard')" :active="request()->routeIs('auditor.*')">
-                            Auditor
+                            Dashboard
                         </x-app.nav-link>
                     @endif
                 </nav>

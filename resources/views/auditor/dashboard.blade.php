@@ -2,15 +2,13 @@
     <div class="grid gap-6 lg:grid-cols-3">
         <x-ui.card title="Start a checklist" description="Choose a published template to begin.">
             <form method="GET" action="{{ route('auditor.start') }}" class="space-y-3">
-                <div>
-                    <label class="block text-sm font-medium text-slate-700" for="template_id">Template</label>
-                    <select id="template_id" name="template_id"
-                            class="mt-1 w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm shadow-sm focus:border-slate-900 focus:outline-none focus:ring-1 focus:ring-slate-900">
+                <x-ui.field label="Template" name="template_id">
+                    <x-ui.select id="template_id" name="template_id">
                         @foreach ($publishedTemplates as $t)
                             <option value="{{ $t->id }}">{{ $t->name }}</option>
                         @endforeach
-                    </select>
-                </div>
+                    </x-ui.select>
+                </x-ui.field>
 
                 <div class="pt-1">
                     <x-ui.button type="submit" class="w-full">Start</x-ui.button>

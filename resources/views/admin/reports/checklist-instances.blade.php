@@ -2,53 +2,33 @@
     <div class="max-w-5xl">
         <x-ui.card title="Filters" description="Only completed checklist instances are shown.">
             <form method="GET" action="{{ route('admin.reports.checklist_instances') }}" class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-                <div>
-                    <label class="block text-sm font-medium text-slate-700" for="date_from">Date from</label>
-                    <input id="date_from" name="date_from" type="date" value="{{ old('date_from', $filters['date_from'] ?? '') }}"
-                           class="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm shadow-sm focus:border-slate-900 focus:outline-none focus:ring-1 focus:ring-slate-900" />
-                    @error('date_from')
-                    <p class="mt-1 text-sm text-rose-600">{{ $message }}</p>
-                    @enderror
-                </div>
+                <x-ui.field label="Date from" name="date_from">
+                    <x-ui.input id="date_from" name="date_from" type="date" value="{{ old('date_from', $filters['date_from'] ?? '') }}" />
+                </x-ui.field>
 
-                <div>
-                    <label class="block text-sm font-medium text-slate-700" for="date_to">Date to</label>
-                    <input id="date_to" name="date_to" type="date" value="{{ old('date_to', $filters['date_to'] ?? '') }}"
-                           class="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm shadow-sm focus:border-slate-900 focus:outline-none focus:ring-1 focus:ring-slate-900" />
-                    @error('date_to')
-                    <p class="mt-1 text-sm text-rose-600">{{ $message }}</p>
-                    @enderror
-                </div>
+                <x-ui.field label="Date to" name="date_to">
+                    <x-ui.input id="date_to" name="date_to" type="date" value="{{ old('date_to', $filters['date_to'] ?? '') }}" />
+                </x-ui.field>
 
-                <div>
-                    <label class="block text-sm font-medium text-slate-700" for="template_id">Template</label>
-                    <select id="template_id" name="template_id"
-                            class="mt-1 w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm shadow-sm focus:border-slate-900 focus:outline-none focus:ring-1 focus:ring-slate-900">
+                <x-ui.field label="Template" name="template_id">
+                    <x-ui.select id="template_id" name="template_id">
                         <option value="">All</option>
                         @foreach ($templates as $t)
                             <option value="{{ $t->id }}" @selected((string)($filters['template_id'] ?? '') === (string)$t->id)>{{ $t->name }}</option>
                         @endforeach
-                    </select>
-                    @error('template_id')
-                    <p class="mt-1 text-sm text-rose-600">{{ $message }}</p>
-                    @enderror
-                </div>
+                    </x-ui.select>
+                </x-ui.field>
 
-                <div>
-                    <label class="block text-sm font-medium text-slate-700" for="auditor_id">Auditor</label>
-                    <select id="auditor_id" name="auditor_id"
-                            class="mt-1 w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm shadow-sm focus:border-slate-900 focus:outline-none focus:ring-1 focus:ring-slate-900">
+                <x-ui.field label="Auditor" name="auditor_id">
+                    <x-ui.select id="auditor_id" name="auditor_id">
                         <option value="">All</option>
                         @foreach ($auditors as $a)
                             <option value="{{ $a->id }}" @selected((string)($filters['auditor_id'] ?? '') === (string)$a->id)>
                                 {{ $a->name }} ({{ $a->email }})
                             </option>
                         @endforeach
-                    </select>
-                    @error('auditor_id')
-                    <p class="mt-1 text-sm text-rose-600">{{ $message }}</p>
-                    @enderror
-                </div>
+                    </x-ui.select>
+                </x-ui.field>
 
                 <div class="sm:col-span-2 lg:col-span-4 flex flex-wrap gap-2 pt-2">
                     <x-ui.button type="submit">Apply filters</x-ui.button>
