@@ -8,6 +8,7 @@ use App\Http\Controllers\Api\V1\AuthController;
 use App\Http\Controllers\Api\V1\ChecklistQuestionController;
 use App\Http\Controllers\Api\V1\ChecklistTemplateController;
 use App\Http\Controllers\Api\V1\Auditor\ChecklistInstanceController;
+use App\Http\Controllers\Api\V1\Reports\ChecklistInstanceReportController;
 
 Route::prefix('v1')->group(function () {
     Route::post('/auth/login', [AuthController::class, 'login']);
@@ -40,6 +41,8 @@ Route::prefix('v1')->group(function () {
                     'checklist-templates' => 'template',
                     'questions' => 'question',
                 ]);
+
+            Route::get('/admin/reports/checklist-instances', [ChecklistInstanceReportController::class, 'index']);
         });
 
         Route::middleware('role:auditor')->group(function () {
