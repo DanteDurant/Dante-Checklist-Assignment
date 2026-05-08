@@ -2,6 +2,8 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Web\Admin\DashboardController as AdminDashboardController;
+use App\Http\Controllers\Web\Admin\ChecklistTemplateController as AdminChecklistTemplateController;
+use App\Http\Controllers\Web\Admin\ChecklistQuestionController as AdminChecklistQuestionController;
 use App\Http\Controllers\Web\Auditor\DashboardController as AuditorDashboardController;
 use App\Http\Controllers\Web\Auth\LoginController;
 use App\Http\Controllers\Web\HomeController;
@@ -19,6 +21,16 @@ Route::post('/logout', [LoginController::class, 'destroy'])
 
 Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/dashboard', AdminDashboardController::class)->name('dashboard');
+
+    Route::resource('templates', AdminChecklistTemplateController::class)
+        ->parameters(['templates' => 'template'])
+        ->names('templates');
+
+    Route::post('/templates/{template}/questions', [AdminChecklistQuestionController::class, 'store'])
+        ->name('templates.questions.store');
+
+    Route::delete('/templates/{template}/questions/{question}', [AdminChecklistQuestionController::class, 'destroy'])
+        ->name('templates.questions.destroy');
 });
 
 Route::middleware(['auth', 'role:auditor'])->prefix('auditor')->name('auditor.')->group(function () {
