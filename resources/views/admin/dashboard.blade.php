@@ -29,19 +29,34 @@
 
         <div class="lg:col-span-2">
             <x-ui.card title="Recent templates" description="Latest 10 templates (from DB).">
-                <x-ui.table :headers="['Title', 'Status', 'Questions']">
+                <div class="space-y-3 sm:hidden">
                     @forelse ($templates as $t)
-                        <tr>
-                            <td class="px-4 py-3 text-sm font-medium text-slate-900">{{ $t->name }}</td>
-                            <td class="px-4 py-3 text-sm text-slate-600">{{ $t->status->value }}</td>
-                            <td class="px-4 py-3 text-sm text-slate-600">{{ $t->questions_count }}</td>
-                        </tr>
+                        <x-ui.card>
+                            <div class="text-sm font-semibold text-slate-900">{{ $t->name }}</div>
+                            <div class="mt-1 text-sm text-slate-600">
+                                Status: {{ $t->status->value }} · Questions: {{ $t->questions_count }}
+                            </div>
+                        </x-ui.card>
                     @empty
-                        <tr>
-                            <td colspan="3" class="px-4 py-6 text-sm text-slate-500">No templates yet.</td>
-                        </tr>
+                        <x-ui.empty-state title="No templates yet" message="Create your first checklist template to get started." />
                     @endforelse
-                </x-ui.table>
+                </div>
+
+                <div class="hidden sm:block">
+                    <x-ui.table :headers="['Title', 'Status', 'Questions']">
+                        @forelse ($templates as $t)
+                            <tr>
+                                <td class="px-4 py-3 text-sm font-medium text-slate-900">{{ $t->name }}</td>
+                                <td class="px-4 py-3 text-sm text-slate-600">{{ $t->status->value }}</td>
+                                <td class="px-4 py-3 text-sm text-slate-600">{{ $t->questions_count }}</td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="3" class="px-4 py-6 text-sm text-slate-500">No templates yet.</td>
+                            </tr>
+                        @endforelse
+                    </x-ui.table>
+                </div>
             </x-ui.card>
         </div>
     </div>

@@ -41,30 +41,67 @@
 
             <div class="mt-6">
                 <x-ui.card title="Questions" description="Ordered by sort order.">
-                    <x-ui.table :headers="['Sort', 'Question', 'Type', 'Required', 'Actions']">
+                    <div class="space-y-3 sm:hidden">
                         @forelse ($template->questions as $q)
-                            <tr>
-                                <td class="px-4 py-3 text-sm text-slate-600">{{ $q->sort_order }}</td>
-                                <td class="px-4 py-3 text-sm font-medium text-slate-900">{{ $q->label }}</td>
-                                <td class="px-4 py-3 text-sm text-slate-600">{{ $q->type->value }}</td>
-                                <td class="px-4 py-3 text-sm text-slate-600">{{ $q->is_required ? 'Yes' : 'No' }}</td>
-                                <td class="px-4 py-3 text-sm">
-                                    <form method="POST" action="{{ route('admin.templates.questions.destroy', [$template, $q]) }}"
-                                          data-confirm="Delete this question?">
-                                        @csrf
-                                        @method('DELETE')
-                                        <x-ui.button type="submit" variant="danger" data-loading-text="Deleting...">Delete</x-ui.button>
-                                    </form>
-                                </td>
-                            </tr>
+                            <x-ui.card>
+                                <div class="flex items-start justify-between gap-4">
+                                    <div class="min-w-0">
+                                        <div class="text-sm font-semibold text-slate-900">
+                                            {{ $q->label }}
+                                        </div>
+                                        <div class="mt-2 flex flex-wrap items-center gap-2 text-xs text-slate-600">
+                                            <span class="rounded-md bg-slate-50 px-2 py-1 ring-1 ring-inset ring-slate-200">
+                                                Sort: {{ $q->sort_order }}
+                                            </span>
+                                            <span class="rounded-md bg-slate-50 px-2 py-1 ring-1 ring-inset ring-slate-200">
+                                                Type: {{ $q->type->value }}
+                                            </span>
+                                            <span class="rounded-md bg-slate-50 px-2 py-1 ring-1 ring-inset ring-slate-200">
+                                                Required: {{ $q->is_required ? 'Yes' : 'No' }}
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <div class="shrink-0">
+                                        <form method="POST" action="{{ route('admin.templates.questions.destroy', [$template, $q]) }}"
+                                              data-confirm="Delete this question?">
+                                            @csrf
+                                            @method('DELETE')
+                                            <x-ui.button type="submit" variant="danger" data-loading-text="Deleting...">Delete</x-ui.button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </x-ui.card>
                         @empty
-                            <tr>
-                                <td colspan="5" class="px-4 py-6">
-                                    <x-ui.empty-state title="No questions yet" message="Add your first question using the form on the right." />
-                                </td>
-                            </tr>
+                            <x-ui.empty-state title="No questions yet" message="Add your first question using the form on the right." />
                         @endforelse
-                    </x-ui.table>
+                    </div>
+
+                    <div class="hidden sm:block">
+                        <x-ui.table :headers="['Sort', 'Question', 'Type', 'Required', 'Actions']">
+                            @forelse ($template->questions as $q)
+                                <tr>
+                                    <td class="px-4 py-3 text-sm text-slate-600">{{ $q->sort_order }}</td>
+                                    <td class="px-4 py-3 text-sm font-medium text-slate-900">{{ $q->label }}</td>
+                                    <td class="px-4 py-3 text-sm text-slate-600">{{ $q->type->value }}</td>
+                                    <td class="px-4 py-3 text-sm text-slate-600">{{ $q->is_required ? 'Yes' : 'No' }}</td>
+                                    <td class="px-4 py-3 text-sm">
+                                        <form method="POST" action="{{ route('admin.templates.questions.destroy', [$template, $q]) }}"
+                                              data-confirm="Delete this question?">
+                                            @csrf
+                                            @method('DELETE')
+                                            <x-ui.button type="submit" variant="danger" data-loading-text="Deleting...">Delete</x-ui.button>
+                                        </form>
+                                    </td>
+                                </tr>
+                            @empty
+                                <tr>
+                                    <td colspan="5" class="px-4 py-6">
+                                        <x-ui.empty-state title="No questions yet" message="Add your first question using the form on the right." />
+                                    </td>
+                                </tr>
+                            @endforelse
+                        </x-ui.table>
+                    </div>
                 </x-ui.card>
             </div>
         </div>
