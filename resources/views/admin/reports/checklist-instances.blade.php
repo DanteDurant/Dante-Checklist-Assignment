@@ -31,7 +31,7 @@
                 </x-ui.field>
 
                 <div class="sm:col-span-2 lg:col-span-4 flex flex-wrap gap-2 pt-2">
-                    <x-ui.button type="submit">Apply filters</x-ui.button>
+                    <x-ui.button type="submit" data-loading-text="Applying...">Apply filters</x-ui.button>
                     <x-ui.button :href="route('admin.reports.checklist_instances')" variant="secondary">Reset</x-ui.button>
                 </div>
             </form>
@@ -57,7 +57,9 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="4" class="px-4 py-6 text-sm text-slate-500">No results.</td>
+                            <td colspan="4" class="px-4 py-6">
+                                <x-ui.empty-state title="No results" message="Try adjusting your filters." />
+                            </td>
                         </tr>
                     @endforelse
                 </x-ui.table>

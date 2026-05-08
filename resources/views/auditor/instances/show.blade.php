@@ -83,10 +83,11 @@
 
                 <div class="flex flex-wrap gap-2 pt-2">
                     @if ($isEditable)
-                        <x-ui.button type="submit" variant="secondary">Save draft</x-ui.button>
+                        <x-ui.button type="submit" variant="secondary" data-loading-text="Saving...">Save draft</x-ui.button>
 
                         <button type="submit"
                                 formaction="{{ route('auditor.instances.submit', $instance) }}"
+                                data-loading-text="Submitting..."
                                 class="inline-flex items-center justify-center rounded-md bg-slate-900 px-3 py-2 text-sm font-semibold text-white transition hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-900 focus:ring-offset-2">
                             Submit checklist
                         </button>

@@ -31,10 +31,10 @@
 
                 <div class="mt-5">
                     <form method="POST" action="{{ route('admin.templates.destroy', $template) }}"
-                          onsubmit="return confirm('Delete this template? This will cascade-delete its questions.');">
+                          data-confirm="Delete this template? This will cascade-delete its questions.">
                         @csrf
                         @method('DELETE')
-                        <x-ui.button type="submit" variant="danger">Delete template</x-ui.button>
+                        <x-ui.button type="submit" variant="danger" data-loading-text="Deleting...">Delete template</x-ui.button>
                     </form>
                 </div>
             </x-ui.card>
@@ -50,16 +50,18 @@
                                 <td class="px-4 py-3 text-sm text-slate-600">{{ $q->is_required ? 'Yes' : 'No' }}</td>
                                 <td class="px-4 py-3 text-sm">
                                     <form method="POST" action="{{ route('admin.templates.questions.destroy', [$template, $q]) }}"
-                                          onsubmit="return confirm('Delete this question?');">
+                                          data-confirm="Delete this question?">
                                         @csrf
                                         @method('DELETE')
-                                        <x-ui.button type="submit" variant="danger">Delete</x-ui.button>
+                                        <x-ui.button type="submit" variant="danger" data-loading-text="Deleting...">Delete</x-ui.button>
                                     </form>
                                 </td>
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="5" class="px-4 py-6 text-sm text-slate-500">No questions yet.</td>
+                                <td colspan="5" class="px-4 py-6">
+                                    <x-ui.empty-state title="No questions yet" message="Add your first question using the form on the right." />
+                                </td>
                             </tr>
                         @endforelse
                     </x-ui.table>
@@ -117,7 +119,7 @@
                     </div>
 
                     <div class="pt-2">
-                        <x-ui.button type="submit">Add question</x-ui.button>
+                        <x-ui.button type="submit" data-loading-text="Adding...">Add question</x-ui.button>
                     </div>
                 </form>
             </x-ui.card>

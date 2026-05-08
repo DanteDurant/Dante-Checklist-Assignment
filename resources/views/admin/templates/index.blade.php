@@ -22,17 +22,21 @@
                         <div class="flex flex-wrap gap-2">
                             <x-ui.button :href="route('admin.templates.edit', $t)" variant="secondary">Edit</x-ui.button>
                             <form method="POST" action="{{ route('admin.templates.destroy', $t) }}"
-                                  onsubmit="return confirm('Delete this template? This will cascade-delete its questions.');">
+                                  data-confirm="Delete this template? This will cascade-delete its questions.">
                                 @csrf
                                 @method('DELETE')
-                                <x-ui.button type="submit" variant="danger">Delete</x-ui.button>
+                                <x-ui.button type="submit" variant="danger" data-loading-text="Deleting...">Delete</x-ui.button>
                             </form>
                         </div>
                     </td>
                 </tr>
             @empty
                 <tr>
-                    <td colspan="5" class="px-4 py-6 text-sm text-slate-500">No templates yet.</td>
+                    <td colspan="5" class="px-4 py-6">
+                        <x-ui.empty-state title="No templates yet" message="Create your first checklist template to get started.">
+                            <x-ui.button :href="route('admin.templates.create')">New template</x-ui.button>
+                        </x-ui.empty-state>
+                    </td>
                 </tr>
             @endforelse
         </x-ui.table>
