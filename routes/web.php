@@ -39,4 +39,6 @@ Route::middleware(['auth', 'role:auditor'])->prefix('auditor')->name('auditor.')
 
     Route::get('/start', [AuditorChecklistInstanceController::class, 'start'])->name('start');
     Route::get('/instances/{instance}', [AuditorChecklistInstanceController::class, 'show'])->name('instances.show');
+    Route::post('/instances/{instance}/draft', [AuditorChecklistInstanceController::class, 'saveDraft'])->name('instances.draft');
+    Route::post('/instances/{instance}/submit', [AuditorChecklistInstanceController::class, 'submit'])->name('instances.submit');
 });
