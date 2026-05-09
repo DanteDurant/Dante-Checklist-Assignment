@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\AuthController as PublicAuthController;
 use App\Http\Controllers\Api\ChecklistsController as PublicChecklistsController;
+use App\Http\Controllers\Api\ExportController;
 use App\Http\Controllers\Api\PdfExportsController;
 use App\Http\Controllers\Api\QuestionsController as PublicQuestionsController;
 use App\Http\Controllers\Api\TemplatesController;
@@ -72,6 +73,12 @@ Route::post('/login', [PublicAuthController::class, 'login']);
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/logout', [PublicAuthController::class, 'logout']);
     Route::get('/me', [PublicAuthController::class, 'me']);
+
+    Route::middleware('role:admin|auditor')->group(function () {
+        Route::post('/exports/pdf', [ExportController::class, 'store']);
+        Route::get('/exports', [ExportController::class, 'index']);
+        Route::get('/exports/{export}', [ExportController::class, 'show']);
+    });
 
     // Admin resources
     Route::middleware('role:admin')->group(function () {

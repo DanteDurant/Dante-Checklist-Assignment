@@ -166,8 +166,22 @@ High-level layering (clean architecture style):
 
 Evaluator docs:
 
-- API guide: `docs/api.md`
-- Postman collection: `postman/Compliance-Management-System.postman_collection.json`
+- API guide: `docs/api.md` (includes **PDF Export System (Synchronous & Asynchronous)**, Postman steps, status lifecycle, troubleshooting)
+- Postman collection: `postman/Compliance-Management-System.postman_collection.json` (folder **Exports (PDF System)**)
+
+### PDF exports and queue workers
+
+Exports may return a PDF immediately (**synchronous**) or enqueue a background job (**asynchronous**) depending on dataset size and settings in `config/pdf_exports.php`.
+
+- **Evaluator quick check:** use Postman **Exports (PDF System)** after logging in. If responses stay **`queued`**, start a worker in a second terminal:
+
+```bash
+php artisan queue:work
+```
+
+- Ensure `.env` has `QUEUE_CONNECTION=database` (default in `.env.example`) and run `php artisan migrate` so the `jobs` table exists.
+
+Full behavior, request/response examples, and status meanings are documented in **`docs/api.md`**.
 
 ### Stable external API (`/api/*`)
 
@@ -190,6 +204,11 @@ Auditor (requires `auth:sanctum` + `role:auditor`):
 - `GET /api/checklists/{checklist}`
 - `PUT /api/checklists/{checklist}/save-draft`
 - `PUT /api/checklists/{checklist}/complete`
+
+#### PDF / exports (admin or auditor, where noted)
+
+- Unified JSON API: `POST /api/exports/pdf`, `GET /api/exports`, `GET /api/exports/{uuid}`
+- Legacy direct PDF URLs: `GET /api/reports/export-pdf`, `GET /api/reports/compliance-snapshot/export-pdf`, `GET /api/reports/auditor-activity/export-pdf`, `GET /api/templates/{template}/export-pdf`, `GET /api/checklists/{checklist}/export-pdf`
 
 ---
 

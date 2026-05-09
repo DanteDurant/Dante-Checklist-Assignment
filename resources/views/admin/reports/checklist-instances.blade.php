@@ -70,12 +70,16 @@
                                     </div>
                                     @can('exportPdf', $row)
                                         <div class="pt-1">
-                                            <x-ui.button
-                                                class="w-full sm:w-auto"
-                                                :href="route('admin.instances.export_pdf', $row)"
-                                                variant="secondary"
-                                                size="sm"
-                                            >PDF</x-ui.button>
+                                            <form
+                                                method="POST"
+                                                action="{{ route('admin.instances.export_pdf', $row) }}"
+                                                data-pdf-export="true"
+                                                class="inline"
+                                            >
+                                                @csrf
+                                                <x-ui.button type="submit" class="w-full sm:w-auto" variant="secondary" size="sm"
+                                                    >PDF</x-ui.button>
+                                            </form>
                                         </div>
                                     @endcan
                                 </div>
@@ -104,7 +108,15 @@
                                 </td>
                                 <td class="px-4 py-3 text-sm">
                                     @can('exportPdf', $row)
-                                        <x-ui.button :href="route('admin.instances.export_pdf', $row)" variant="secondary" size="sm">PDF</x-ui.button>
+                                        <form
+                                            method="POST"
+                                            action="{{ route('admin.instances.export_pdf', $row) }}"
+                                            data-pdf-export="true"
+                                            class="inline"
+                                        >
+                                            @csrf
+                                            <x-ui.button type="submit" variant="secondary" size="sm">PDF</x-ui.button>
+                                        </form>
                                     @else
                                         <span class="text-xs text-ui-fg-subtle">—</span>
                                     @endcan

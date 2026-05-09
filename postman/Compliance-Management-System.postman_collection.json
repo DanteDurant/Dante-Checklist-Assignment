@@ -1,6 +1,7 @@
 {
   "info": {
     "name": "Compliance Management System API",
+    "description": "Import this collection, set `base_url`, then **Auth → Login (Admin or Auditor)**. The **Exports (PDF System)** folder covers synchronous and queued PDF exports. For queued exports, run `php artisan queue:work` in a separate terminal (with `QUEUE_CONNECTION=database` in `.env`). See `docs/api.md` for full detail.",
     "_postman_id": "b5b31f2c-7f0b-4f74-9a6d-9b2c1b0e7f11",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
@@ -13,7 +14,9 @@
     { "key": "token", "value": "" },
     { "key": "template_id", "value": "" },
     { "key": "question_id", "value": "" },
-    { "key": "checklist_id", "value": "" }
+    { "key": "checklist_id", "value": "" },
+    { "key": "export_uuid", "value": "" },
+    { "key": "download_url", "value": "" }
   ],
   "item": [
     {
@@ -243,6 +246,107 @@
                 { "key": "per_page", "value": "15" }
               ]
             }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Exports (PDF System)",
+      "description": "Unified PDF export API. Responses may be **200 + PDF** (immediate) or **202 + JSON** (queued). Start `php artisan queue:work` before testing queued flows.",
+      "item": [
+        {
+          "name": "Create PDF export (unified)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json, application/pdf" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/exports/pdf",
+              "host": ["{{base_url}}"],
+              "path": ["api", "exports", "pdf"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"export_type\": \"compliance_snapshot\",\n  \"filters\": {\n    \"detail\": \"standard\",\n    \"date_from\": null,\n    \"date_to\": null\n  }\n}\n",
+              "options": { "raw": { "language": "json" } }
+            },
+            "description": "**Admin only** for this example body. Returns **200** with PDF bytes if immediate, or **202** JSON if queued. When **202**, Tests save `export_uuid`."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const ct = pm.response.headers.get('Content-Type') || '';",
+                  "if (ct.includes('application/json')) {",
+                  "  try {",
+                  "    const json = pm.response.json();",
+                  "    if (pm.response.code === 202 && json?.data?.export_uuid) {",
+                  "      pm.collectionVariables.set('export_uuid', json.data.export_uuid);",
+                  "    }",
+                  "  } catch (e) {}",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "List exports",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": {
+              "raw": "{{base_url}}/api/exports",
+              "host": ["{{base_url}}"],
+              "path": ["api", "exports"]
+            },
+            "description": "Recent exports for the current user. Admins may add `?all=1`."
+          }
+        },
+        {
+          "name": "Get export by UUID",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": {
+              "raw": "{{base_url}}/api/exports/{{export_uuid}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "exports", "{{export_uuid}}"]
+            },
+            "description": "Poll until `status` is `completed` or `failed`. Tests save `download_url` when present."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "try {",
+                  "  const json = pm.response.json();",
+                  "  const u = json?.data?.download_url;",
+                  "  if (u) pm.collectionVariables.set('download_url', u);",
+                  "} catch (e) {}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Download completed PDF",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Accept", "value": "application/pdf, application/json" }
+            ],
+            "url": {
+              "raw": "{{download_url}}",
+              "variable": []
+            },
+            "description": "Run **Get export by UUID** first so `download_url` is set (full signed URL). Uses collection Bearer auth. If `download_url` is empty, poll until export is `completed`."
           }
         }
       ]

@@ -1,7 +1,7 @@
 @props([
     'action',
     'submitLabel' => 'Download PDF',
-    'method' => 'GET',
+    'method' => 'POST',
     /** @var array<string, scalar|null> $hiddenFields */
     'hiddenFields' => [],
     'showSectionsHint' => false,
@@ -26,6 +26,10 @@
     data-pdf-export="true"
     {{ $attributes->merge(['class' => $shellClass]) }}
 >
+    @if (strtoupper((string) $method) === 'POST')
+        @csrf
+    @endif
+
     @if ($heading)
         <div class="mb-3">
             <div class="text-sm font-semibold text-ui-fg">Export to PDF</div>

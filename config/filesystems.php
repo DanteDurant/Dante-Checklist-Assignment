@@ -38,6 +38,14 @@ return [
             'report' => false,
         ],
 
+        /** Generated PDF exports (queued); not publicly web-served */
+        'exports' => [
+            'driver' => 'local',
+            'root' => storage_path('app/private/exports'),
+            'throw' => false,
+            'report' => false,
+        ],
+
         'public' => [
             'driver' => 'local',
             'root' => storage_path('app/public'),

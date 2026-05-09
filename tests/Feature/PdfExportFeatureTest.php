@@ -3,10 +3,12 @@
 namespace Tests\Feature;
 
 use App\Enums\ChecklistTemplateStatus;
+use App\Jobs\GenerateStoredPdfExportJob;
 use App\Models\ChecklistInstance;
 use App\Models\ChecklistTemplate;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Queue;
 use Laravel\Sanctum\Sanctum;
 use Spatie\Permission\Models\Role;
 use Tests\TestCase;
@@ -28,7 +30,7 @@ class PdfExportFeatureTest extends TestCase
         $admin = User::factory()->create()->assignRole('admin');
 
         $this->actingAs($admin)
-            ->get(route('admin.reports.checklist_instances_pdf'))
+            ->post(route('admin.reports.checklist_instances_pdf'))
             ->assertOk()
             ->assertHeader('content-type', 'application/pdf');
     }
@@ -38,7 +40,7 @@ class PdfExportFeatureTest extends TestCase
         $auditor = User::factory()->create()->assignRole('auditor');
 
         $this->actingAs($auditor)
-            ->get(route('admin.reports.checklist_instances_pdf'))
+            ->post(route('admin.reports.checklist_instances_pdf'))
             ->assertForbidden();
     }
 
@@ -53,7 +55,7 @@ class PdfExportFeatureTest extends TestCase
         ]);
 
         $this->actingAs($auditor)
-            ->get(route('auditor.instances.export_pdf', $instance))
+            ->post(route('auditor.instances.export_pdf', $instance))
             ->assertOk()
             ->assertHeader('content-type', 'application/pdf');
     }
@@ -70,7 +72,7 @@ class PdfExportFeatureTest extends TestCase
         ]);
 
         $this->actingAs($auditorB)
-            ->get(route('auditor.instances.export_pdf', $instance))
+            ->post(route('auditor.instances.export_pdf', $instance))
             ->assertForbidden();
     }
 
@@ -85,7 +87,7 @@ class PdfExportFeatureTest extends TestCase
         ]);
 
         $this->actingAs($auditor)
-            ->get(route('auditor.instances.export_pdf', $instance))
+            ->post(route('auditor.instances.export_pdf', $instance))
             ->assertForbidden();
     }
 
@@ -101,7 +103,7 @@ class PdfExportFeatureTest extends TestCase
         ]);
 
         $this->actingAs($admin)
-            ->get(route('admin.instances.export_pdf', $instance))
+            ->post(route('admin.instances.export_pdf', $instance))
             ->assertOk()
             ->assertHeader('content-type', 'application/pdf');
     }
@@ -112,7 +114,7 @@ class PdfExportFeatureTest extends TestCase
         $template = ChecklistTemplate::factory()->create();
 
         $this->actingAs($admin)
-            ->get(route('admin.templates.export_pdf', $template))
+            ->post(route('admin.templates.export_pdf', $template))
             ->assertOk()
             ->assertHeader('content-type', 'application/pdf');
     }
@@ -220,8 +222,29 @@ class PdfExportFeatureTest extends TestCase
         ]);
 
         $this->actingAs($admin)
-            ->get(route('admin.instances.export_pdf', $instance).'?detail=detailed')
+            ->post(route('admin.instances.export_pdf', $instance), ['detail' => 'detailed'])
             ->assertOk()
             ->assertHeader('content-type', 'application/pdf');
+    }
+
+    public function test_api_report_pdf_queues_when_threshold_zero(): void
+    {
+        config(['pdf_exports.sync_max_report_rows' => -1]);
+
+        Queue::fake();
+
+        $admin = User::factory()->create()->assignRole('admin');
+        Sanctum::actingAs($admin);
+
+        $this->postJson('/api/exports/pdf', [
+            'export_type' => 'checklist_report',
+            'filters' => [
+                'detail' => 'standard',
+            ],
+        ])
+            ->assertStatus(202)
+            ->assertJsonPath('data.async', true);
+
+        Queue::assertPushed(GenerateStoredPdfExportJob::class);
     }
 }

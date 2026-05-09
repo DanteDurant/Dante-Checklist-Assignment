@@ -4,6 +4,7 @@ namespace App\Application\Pdf;
 
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Response;
+use Illuminate\Support\Facades\Storage;
 
 final class PdfExportService
 {
@@ -30,6 +31,39 @@ final class PdfExportService
         }
 
         return $pdf->download($filename);
+    }
+
+    /**
+     * Render the PDF and persist it to the given disk (relative path).
+     *
+     * @param  array<string, mixed>  $data
+     * @param  array<string, bool|string|int|float|null>  $dompdfOptions
+     */
+    public function saveToDisk(
+        string $view,
+        array $data,
+        string $filename,
+        string $relativePath,
+        string $disk = 'exports',
+        array $dompdfOptions = [],
+    ): void {
+        $filename = $this->sanitizeFilename($filename);
+
+        $payload = array_merge([
+            'appName' => (string) config('app.name'),
+            'generatedAt' => now()->timezone(config('app.timezone')),
+        ], $data);
+
+        $pdf = Pdf::loadView($view, $payload)
+            ->setPaper('a4', 'portrait')
+            ->setOption('isRemoteEnabled', false)
+            ->setOption('isPhpEnabled', false);
+
+        foreach ($dompdfOptions as $key => $value) {
+            $pdf->setOption((string) $key, $value);
+        }
+
+        Storage::disk($disk)->put($relativePath, $pdf->output());
     }
 
     private function sanitizeFilename(string $name): string

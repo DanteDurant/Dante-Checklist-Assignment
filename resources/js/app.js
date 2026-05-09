@@ -121,13 +121,48 @@ function parseFilenameFromContentDisposition(header) {
 
 const PDF_FETCH_TIMEOUT_MS = 120000;
 
-async function handlePdfExport(form) {
-    if (form.dataset.pdfInFlight === '1') {
-        return;
+const PDF_POLL_INTERVAL_MS = 1500;
+
+const PDF_POLL_MAX_MS = 600000;
+
+async function pollExportUntilReady(statusUrl) {
+    const started = Date.now();
+
+    while (Date.now() - started < PDF_POLL_MAX_MS) {
+        const res = await fetch(statusUrl, {
+            credentials: 'same-origin',
+            headers: {
+                Accept: 'application/json',
+                'X-Requested-With': 'XMLHttpRequest',
+            },
+        });
+
+        if (!res.ok) {
+            throw new Error(`Status check failed (${res.status})`);
+        }
+
+        const payload = await res.json();
+        const data = payload.data ?? payload;
+        const status = data.status;
+
+        if (status === 'completed' && data.download_url) {
+            window.location.assign(data.download_url);
+
+            return;
+        }
+
+        if (status === 'failed') {
+            throw new Error(data.error || 'Export failed.');
+        }
+
+        await new Promise((r) => setTimeout(r, PDF_POLL_INTERVAL_MS));
     }
 
-    const method = (form.getAttribute('method') || 'GET').toUpperCase();
-    if (method !== 'GET') {
+    throw new Error('Export is still processing. Check back in a few minutes or refresh the page.');
+}
+
+async function handlePdfExport(form) {
+    if (form.dataset.pdfInFlight === '1') {
         return;
     }
 
@@ -144,33 +179,83 @@ async function handlePdfExport(form) {
 
     buttons.forEach((btn) => setButtonLoading(btn, true));
 
+    const method = (form.getAttribute('method') || 'GET').toUpperCase();
+
     const controller = new AbortController();
     const abortTimer = window.setTimeout(() => controller.abort(), PDF_FETCH_TIMEOUT_MS);
 
     try {
-        const url = new URL(form.action, window.location.origin);
-        const fd = new FormData(form);
-        fd.forEach((value, key) => {
-            url.searchParams.set(key, value);
-        });
-
-        const res = await fetch(url.toString(), {
-            method: 'GET',
+        const fetchInit = {
             credentials: 'same-origin',
             signal: controller.signal,
             headers: {
-                Accept: 'application/pdf,application/octet-stream;q=0.9,*/*;q=0.8',
+                Accept: 'application/json,application/pdf;q=0.9,application/octet-stream;q=0.8,*/*;q=0.7',
                 'X-Requested-With': 'XMLHttpRequest',
             },
-        });
+        };
+
+        const csrf = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+
+        let res;
+
+        if (method === 'GET') {
+            const url = new URL(form.action, window.location.origin);
+            const fd = new FormData(form);
+            fd.forEach((value, key) => {
+                url.searchParams.set(key, value);
+            });
+
+            res = await fetch(url.toString(), {
+                ...fetchInit,
+                method: 'GET',
+            });
+        } else {
+            const fd = new FormData(form);
+            res = await fetch(form.action, {
+                ...fetchInit,
+                method,
+                body: fd,
+                headers: {
+                    ...fetchInit.headers,
+                    ...(csrf ? { 'X-CSRF-TOKEN': csrf } : {}),
+                },
+            });
+        }
 
         window.clearTimeout(abortTimer);
+
+        const ct = (res.headers.get('Content-Type') || '').toLowerCase();
+
+        if (ct.includes('application/json')) {
+            const json = await res.json();
+
+            if (!res.ok) {
+                throw new Error(json.message || `Server responded with ${res.status}`);
+            }
+
+            const data = json.data ?? {};
+            const statusUrl = data.status_url || json.status_url;
+            const isAsync = data.async === true || json.async === true;
+
+            if (isAsync && statusUrl) {
+                buttons.forEach((btn) => {
+                    if (btn.tagName === 'BUTTON') {
+                        btn.setAttribute('data-loading-text', 'Preparing export…');
+                    }
+                });
+                buttons.forEach((btn) => setButtonLoading(btn, true));
+                await pollExportUntilReady(statusUrl);
+
+                return;
+            }
+
+            throw new Error('Unexpected JSON response from export.');
+        }
 
         if (!res.ok) {
             throw new Error(`Server responded with ${res.status}`);
         }
 
-        const ct = (res.headers.get('Content-Type') || '').toLowerCase();
         if (!ct.includes('pdf') && !ct.includes('octet-stream') && !ct.includes('application/download')) {
             await res.text();
             throw new Error('Unexpected response — not a PDF');
@@ -195,7 +280,7 @@ async function handlePdfExport(form) {
             window.alert('PDF export timed out. Please try again with fewer filters or a smaller scope.');
         } else {
             console.error(err);
-            window.alert('PDF export failed. Please try again.');
+            window.alert(err?.message || 'PDF export failed. Please try again.');
         }
     } finally {
         resetFlight();
