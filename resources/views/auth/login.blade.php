@@ -1,23 +1,23 @@
 <x-layouts.base title="Login">
     <div class="mx-auto max-w-md">
         <x-ui.card title="Sign in" description="Use your seeded admin/auditor credentials.">
-            <div class="mb-4 rounded-lg border border-slate-200 bg-slate-50 p-3">
-                <p class="text-xs font-semibold uppercase tracking-wide text-slate-600">Quick credentials</p>
+            <div class="mb-4 rounded-lg border border-ui-border bg-ui-muted/60 p-3">
+                <p class="text-xs font-semibold uppercase tracking-wider text-ui-fg-muted">Quick credentials</p>
                 <div class="mt-2 space-y-3">
-                    <div class="rounded-md border border-slate-200 bg-white p-3">
+                    <div class="rounded-md border border-ui-border bg-ui-surface p-3">
                         <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                             <div class="min-w-0">
-                                <div class="text-sm font-semibold text-slate-900">Admin</div>
-                                <div class="mt-1 text-sm text-slate-700">
-                                    <span class="block break-all font-mono">admin@example.com</span>
+                                <div class="text-sm font-semibold text-ui-fg">Admin</div>
+                                <div class="mt-1 text-sm text-ui-fg-muted">
+                                    <span class="block break-all font-mono text-ui-fg-subtle">admin@example.com</span>
                                 </div>
-                                <div class="mt-1 text-sm text-slate-700">
-                                    Password: <span class="font-mono">password</span>
+                                <div class="mt-1 text-sm text-ui-fg-muted">
+                                    Password: <span class="font-mono text-ui-fg">password</span>
                                 </div>
                             </div>
                             <div class="sm:justify-items-end">
                                 <button type="button"
-                                        class="w-full rounded-md bg-white px-3 py-2 text-sm font-semibold text-slate-900 ring-1 ring-inset ring-slate-300 hover:bg-slate-50 sm:w-auto"
+                                        class="w-full rounded-md bg-ui-surface px-3 py-2 text-sm font-semibold text-ui-fg ring-1 ring-inset ring-ui-border transition hover:bg-ui-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ui-ring focus-visible:ring-offset-2 focus-visible:ring-offset-ui-surface sm:w-auto"
                                         data-fill-credentials
                                         data-fill-email="admin@example.com"
                                         data-fill-password="password">
@@ -27,20 +27,20 @@
                         </div>
                     </div>
 
-                    <div class="rounded-md border border-slate-200 bg-white p-3">
+                    <div class="rounded-md border border-ui-border bg-ui-surface p-3">
                         <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                             <div class="min-w-0">
-                                <div class="text-sm font-semibold text-slate-900">Auditor</div>
-                                <div class="mt-1 text-sm text-slate-700">
-                                    <span class="block break-all font-mono">auditor@example.com</span>
+                                <div class="text-sm font-semibold text-ui-fg">Auditor</div>
+                                <div class="mt-1 text-sm text-ui-fg-muted">
+                                    <span class="block break-all font-mono text-ui-fg-subtle">auditor@example.com</span>
                                 </div>
-                                <div class="mt-1 text-sm text-slate-700">
-                                    Password: <span class="font-mono">password</span>
+                                <div class="mt-1 text-sm text-ui-fg-muted">
+                                    Password: <span class="font-mono text-ui-fg">password</span>
                                 </div>
                             </div>
                             <div class="sm:justify-items-end">
                                 <button type="button"
-                                        class="w-full rounded-md bg-white px-3 py-2 text-sm font-semibold text-slate-900 ring-1 ring-inset ring-slate-300 hover:bg-slate-50 sm:w-auto"
+                                        class="w-full rounded-md bg-ui-surface px-3 py-2 text-sm font-semibold text-ui-fg ring-1 ring-inset ring-ui-border transition hover:bg-ui-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ui-ring focus-visible:ring-offset-2 focus-visible:ring-offset-ui-surface sm:w-auto"
                                         data-fill-credentials
                                         data-fill-email="auditor@example.com"
                                         data-fill-password="password">
@@ -50,22 +50,22 @@
                         </div>
                     </div>
                 </div>
-                <p class="mt-2 text-xs text-slate-500">Autofill will populate the form below.</p>
+                <p class="mt-2 text-xs leading-relaxed text-ui-fg-subtle">Autofill will populate the form below.</p>
             </div>
 
             <form method="POST" action="{{ route('login.store') }}" class="space-y-4">
                 @csrf
 
                 <x-ui.field label="Email" name="email">
-                    <x-ui.input id="email" name="email" type="email" value="{{ old('email') }}" required />
+                    <x-ui.input id="email" name="email" type="email" value="{{ old('email') }}" required autocomplete="username" />
                 </x-ui.field>
 
                 <x-ui.field label="Password" name="password">
                     <div class="relative">
-                        <x-ui.input id="password" name="password" type="password" required class="pr-10" />
+                        <x-ui.input id="password" name="password" type="password" required class="pr-10" autocomplete="current-password" />
                         <button
                             type="button"
-                            class="absolute inset-y-0 right-0 inline-flex items-center justify-center px-3 text-slate-600 hover:text-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2 dark:text-slate-300 dark:hover:text-slate-100 dark:focus:ring-slate-600 dark:focus:ring-offset-slate-950"
+                            class="absolute inset-y-0 right-0 inline-flex items-center justify-center px-3 text-ui-fg-subtle transition hover:text-ui-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ui-ring"
                             data-toggle-password="password"
                             aria-label="Show password"
                         >
@@ -87,4 +87,3 @@
         </x-ui.card>
     </div>
 </x-layouts.base>
-

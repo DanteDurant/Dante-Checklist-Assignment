@@ -2,7 +2,9 @@
 
 namespace App\Http\Requests\Api\V1\Reports;
 
+use App\Enums\ExportDetailLevel;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class ChecklistInstanceReportRequest extends FormRequest
 {
@@ -20,7 +22,7 @@ class ChecklistInstanceReportRequest extends FormRequest
             'auditor_id' => ['nullable', 'integer', 'exists:users,id'],
             'q' => ['nullable', 'string', 'max:255'],
             'per_page' => ['nullable', 'integer', 'min:1', 'max:100'],
+            'detail' => ['nullable', 'string', Rule::in(array_column(ExportDetailLevel::cases(), 'value'))],
         ];
     }
 }
-

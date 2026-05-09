@@ -1,18 +1,19 @@
 <?php
 
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Api\AuthController as PublicAuthController;
+use App\Http\Controllers\Api\ChecklistsController as PublicChecklistsController;
+use App\Http\Controllers\Api\PdfExportsController;
+use App\Http\Controllers\Api\QuestionsController as PublicQuestionsController;
+use App\Http\Controllers\Api\TemplatesController;
 use App\Http\Controllers\Api\V1\AdminController;
+use App\Http\Controllers\Api\V1\Auditor\ChecklistInstanceController;
 use App\Http\Controllers\Api\V1\AuditorController;
 use App\Http\Controllers\Api\V1\AuthController;
 use App\Http\Controllers\Api\V1\ChecklistQuestionController;
 use App\Http\Controllers\Api\V1\ChecklistTemplateController;
-use App\Http\Controllers\Api\V1\Auditor\ChecklistInstanceController;
 use App\Http\Controllers\Api\V1\Reports\ChecklistInstanceReportController;
-use App\Http\Controllers\Api\AuthController as PublicAuthController;
-use App\Http\Controllers\Api\TemplatesController;
-use App\Http\Controllers\Api\QuestionsController as PublicQuestionsController;
-use App\Http\Controllers\Api\ChecklistsController as PublicChecklistsController;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Route;
 
 Route::prefix('v1')->group(function () {
     Route::post('/auth/login', [AuthController::class, 'login']);
@@ -85,6 +86,14 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::delete('/questions/{question}', [PublicQuestionsController::class, 'destroy']);
 
         Route::get('/reports', [PublicChecklistsController::class, 'reports']);
+        Route::get('/reports/export-pdf', [PdfExportsController::class, 'checklistReport']);
+        Route::get('/reports/compliance-snapshot/export-pdf', [PdfExportsController::class, 'complianceSnapshot']);
+        Route::get('/reports/auditor-activity/export-pdf', [PdfExportsController::class, 'auditorActivityReport']);
+        Route::get('/templates/{template}/export-pdf', [PdfExportsController::class, 'checklistTemplate']);
+    });
+
+    Route::middleware('role:admin|auditor')->group(function () {
+        Route::get('/checklists/{checklist}/export-pdf', [PdfExportsController::class, 'checklistInstance']);
     });
 
     // Auditor resources

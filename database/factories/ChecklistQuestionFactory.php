@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Str;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\ChecklistQuestion>
+ * @extends Factory<ChecklistQuestion>
  */
 class ChecklistQuestionFactory extends Factory
 {
@@ -20,15 +20,29 @@ class ChecklistQuestionFactory extends Factory
         $type = fake()->randomElement([
             ChecklistQuestionType::Boolean,
             ChecklistQuestionType::Text,
+            ChecklistQuestionType::Textarea,
             ChecklistQuestionType::Number,
             ChecklistQuestionType::Date,
+            ChecklistQuestionType::DateTime,
+            ChecklistQuestionType::Select,
+            ChecklistQuestionType::Radio,
+            ChecklistQuestionType::Checkbox,
             ChecklistQuestionType::SingleSelect,
             ChecklistQuestionType::MultiSelect,
+            ChecklistQuestionType::Email,
+            ChecklistQuestionType::Phone,
+            ChecklistQuestionType::Url,
         ]);
 
         $options = null;
 
-        if (in_array($type, [ChecklistQuestionType::SingleSelect, ChecklistQuestionType::MultiSelect], true)) {
+        if (in_array($type, [
+            ChecklistQuestionType::Select,
+            ChecklistQuestionType::Radio,
+            ChecklistQuestionType::Checkbox,
+            ChecklistQuestionType::SingleSelect,
+            ChecklistQuestionType::MultiSelect,
+        ], true)) {
             $options = collect(range(1, fake()->numberBetween(3, 6)))
                 ->map(fn ($i) => [
                     'value' => "option_{$i}",
@@ -52,4 +66,3 @@ class ChecklistQuestionFactory extends Factory
         ];
     }
 }
-

@@ -5,15 +5,19 @@
 
 @php
     $styles = [
-        'success' => 'border-emerald-200 bg-emerald-50 text-emerald-900 dark:border-emerald-900/40 dark:bg-emerald-950/40 dark:text-emerald-100',
-        'error' => 'border-rose-200 bg-rose-50 text-rose-900 dark:border-rose-900/40 dark:bg-rose-950/40 dark:text-rose-100',
-        'info' => 'border-slate-200 bg-white text-slate-900 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-100',
+        'success' => 'border-emerald-300/80 bg-emerald-50 text-emerald-950 dark:border-emerald-800 dark:bg-emerald-950/80 dark:text-emerald-50',
+        'error' => 'border-rose-300/80 bg-rose-50 text-rose-950 dark:border-rose-800 dark:bg-rose-950/80 dark:text-rose-50',
+        'info' => 'border-ui-border bg-ui-muted text-ui-fg',
     ];
+
+    $role = match ($type) {
+        'error' => 'alert',
+        default => 'status',
+    };
 @endphp
 
 @if ($message)
-    <div {{ $attributes->merge(['class' => 'mb-6 rounded-lg border px-4 py-3 text-sm '.$styles[$type]]) }}>
+    <div {{ $attributes->merge(['role' => $role, 'class' => 'mb-6 rounded-lg border px-4 py-3 text-sm font-medium leading-relaxed '.$styles[$type]]) }}>
         {{ $message }}
     </div>
 @endif
-

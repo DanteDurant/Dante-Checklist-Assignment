@@ -30,11 +30,15 @@
                     </x-ui.select>
                 </x-ui.field>
 
-                <div class="sm:col-span-2 lg:col-span-4 flex flex-wrap gap-2 pt-2">
+                <div class="flex flex-wrap gap-2 pt-2 sm:col-span-2 lg:col-span-4">
                     <x-ui.button type="submit" data-loading-text="Applying...">Apply filters</x-ui.button>
                     <x-ui.button :href="route('admin.reports.checklist_instances')" variant="secondary">Reset</x-ui.button>
                 </div>
             </form>
+
+            <div class="mt-8 border-t border-ui-border pt-6">
+                <x-export.reports-pdf-panel :hidden-fields="request()->except(['page'])" />
+            </div>
         </x-ui.card>
 
         <div class="mt-6">
@@ -44,26 +48,36 @@
                         <x-ui.card>
                             <div class="space-y-2">
                                 <div>
-                                    <div class="text-xs font-semibold uppercase tracking-wide text-slate-500">Template</div>
-                                    <div class="text-sm font-semibold text-slate-900">
+                                    <div class="text-xs font-semibold uppercase tracking-wider text-ui-fg-subtle">Template</div>
+                                    <div class="text-sm font-semibold text-ui-fg">
                                         {{ $row->template?->name ?? ('Template #'.$row->checklist_template_id) }}
                                     </div>
                                 </div>
                                 <div class="grid grid-cols-1 gap-2">
                                     <div>
-                                        <div class="text-xs font-semibold uppercase tracking-wide text-slate-500">Auditor</div>
-                                        <div class="text-sm text-slate-700">
+                                        <div class="text-xs font-semibold uppercase tracking-wider text-ui-fg-subtle">Auditor</div>
+                                        <div class="text-sm text-ui-fg-muted">
                                             {{ $row->auditor?->name ?? ('User #'.$row->auditor_id) }}
                                         </div>
                                     </div>
                                     <div>
-                                        <div class="text-xs font-semibold uppercase tracking-wide text-slate-500">Completion date</div>
-                                        <div class="text-sm text-slate-700">{{ $row->submitted_at?->toDateTimeString() ?? '—' }}</div>
+                                        <div class="text-xs font-semibold uppercase tracking-wider text-ui-fg-subtle">Completion date</div>
+                                        <div class="text-sm tabular-nums text-ui-fg-muted">{{ $row->submitted_at?->toDateTimeString() ?? '—' }}</div>
                                     </div>
                                     <div>
-                                        <div class="text-xs font-semibold uppercase tracking-wide text-slate-500">Status</div>
-                                        <div class="text-sm text-slate-700"><x-ui.status-badge :status="$row->status" /></div>
+                                        <div class="text-xs font-semibold uppercase tracking-wider text-ui-fg-subtle">Status</div>
+                                        <div class="text-sm"><x-ui.status-badge :status="$row->status" /></div>
                                     </div>
+                                    @can('exportPdf', $row)
+                                        <div class="pt-1">
+                                            <x-ui.button
+                                                class="w-full sm:w-auto"
+                                                :href="route('admin.instances.export_pdf', $row)"
+                                                variant="secondary"
+                                                size="sm"
+                                            >PDF</x-ui.button>
+                                        </div>
+                                    @endcan
                                 </div>
                             </div>
                         </x-ui.card>
@@ -73,25 +87,32 @@
                 </div>
 
                 <div class="hidden sm:block">
-                    <x-ui.table :headers="['Template', 'Auditor', 'Completion date', 'Status']">
+                    <x-ui.table :headers="['Template', 'Auditor', 'Completion date', 'Status', 'PDF']">
                         @forelse ($results as $row)
                             <tr>
-                                <td class="px-4 py-3 text-sm font-medium text-slate-900">
+                                <td class="px-4 py-3 text-sm font-medium text-ui-fg">
                                     {{ $row->template?->name ?? ('Template #'.$row->checklist_template_id) }}
                                 </td>
-                                <td class="px-4 py-3 text-sm text-slate-700">
+                                <td class="px-4 py-3 text-sm text-ui-fg-muted">
                                     {{ $row->auditor?->name ?? ('User #'.$row->auditor_id) }}
                                 </td>
-                                <td class="px-4 py-3 text-sm text-slate-700">
+                                <td class="px-4 py-3 text-sm tabular-nums text-ui-fg-muted">
                                     {{ $row->submitted_at?->toDateTimeString() ?? '—' }}
                                 </td>
-                                <td class="px-4 py-3 text-sm text-slate-700">
+                                <td class="px-4 py-3 text-sm">
                                     <x-ui.status-badge :status="$row->status" />
+                                </td>
+                                <td class="px-4 py-3 text-sm">
+                                    @can('exportPdf', $row)
+                                        <x-ui.button :href="route('admin.instances.export_pdf', $row)" variant="secondary" size="sm">PDF</x-ui.button>
+                                    @else
+                                        <span class="text-xs text-ui-fg-subtle">—</span>
+                                    @endcan
                                 </td>
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="4" class="px-4 py-6">
+                                <td colspan="5" class="px-4 py-6">
                                     <x-ui.empty-state title="No results" message="Try adjusting your filters." />
                                 </td>
                             </tr>
@@ -99,11 +120,10 @@
                     </x-ui.table>
                 </div>
 
-                <div class="mt-4">
+                <div class="mt-6 border-t border-ui-border pt-5">
                     {{ $results->links() }}
                 </div>
             </x-ui.card>
         </div>
     </div>
 </x-layouts.admin>
-

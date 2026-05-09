@@ -258,6 +258,42 @@ Filters:
 
 ---
 
+## PDF exports (auth + role)
+
+All PDF routes return `Content-Type: application/pdf` and a file download. Use the same **Bearer** token as JSON endpoints.
+
+### Detail levels (query: `detail=`)
+
+- `summary` — minimal portfolio / instance overview
+- `standard` — default balanced report (default if omitted)
+- `detailed` — audit-grade: extra metadata, raw values, timeline (where applicable)
+- `executive` — KPIs, status mix, short previews (large tables may be capped)
+
+### Admin-only
+
+- `GET /api/reports/export-pdf` — completed checklist register; supports the same filters as `GET /api/reports` plus `detail`
+- `GET /api/reports/compliance-snapshot/export-pdf` — dashboard-style KPIs, lifecycle counts, top templates, recent completions; optional `date_from`, `date_to`, `detail`
+- `GET /api/reports/auditor-activity/export-pdf` — per-auditor workload; optional `date_from`, `date_to`, `auditor_id`, `detail`
+- `GET /api/templates/{template}/export-pdf` — template specification; optional `detail`
+
+### Admin or auditor (checklist must be completed & exportable)
+
+- `GET /api/checklists/{checklist}/export-pdf` — single instance audit; optional `detail` and `sections` (comma-separated: `metadata`, `metrics`, `responses`, `timeline`, `findings`, `toc`) to override which blocks appear in the PDF
+
+### Examples
+
+```http
+GET /api/reports/export-pdf?detail=executive&template_id=1
+Authorization: Bearer <admin token>
+```
+
+```http
+GET /api/checklists/42/export-pdf?detail=detailed
+Authorization: Bearer <auditor token>
+```
+
+---
+
 ## Endpoint reference (at a glance)
 
 ### Auth
@@ -286,6 +322,15 @@ Filters:
 
 ### Reports (admin, auth + role:admin)
 - `GET /api/reports`
+
+### PDF exports (admin)
+- `GET /api/reports/export-pdf`
+- `GET /api/reports/compliance-snapshot/export-pdf`
+- `GET /api/reports/auditor-activity/export-pdf`
+- `GET /api/templates/{template}/export-pdf`
+
+### PDF exports (admin or auditor)
+- `GET /api/checklists/{checklist}/export-pdf`
 
 ---
 

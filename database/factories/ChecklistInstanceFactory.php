@@ -10,7 +10,7 @@ use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Str;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\ChecklistInstance>
+ * @extends Factory<ChecklistInstance>
  */
 class ChecklistInstanceFactory extends Factory
 {
@@ -46,5 +46,24 @@ class ChecklistInstanceFactory extends Factory
             'submitted_at' => now(),
         ]);
     }
-}
 
+    public function approved(): static
+    {
+        return $this->state(fn () => [
+            'status' => ChecklistInstanceStatus::Approved,
+            'started_at' => now()->subDay(),
+            'submitted_at' => now()->subHours(6),
+            'finalized_at' => now()->subHours(2),
+        ]);
+    }
+
+    public function rejected(): static
+    {
+        return $this->state(fn () => [
+            'status' => ChecklistInstanceStatus::Rejected,
+            'started_at' => now()->subDays(3),
+            'submitted_at' => null,
+            'finalized_at' => null,
+        ]);
+    }
+}

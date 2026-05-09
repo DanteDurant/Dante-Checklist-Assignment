@@ -12,7 +12,6 @@
         (function () {
             try {
                 const stored = localStorage.getItem('theme'); // 'light' | 'dark' | null
-                // Light is the default unless the user explicitly chose dark.
                 const theme = stored || 'light';
                 const root = document.documentElement;
                 root.classList.toggle('dark', theme === 'dark');
@@ -23,7 +22,7 @@
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
-<body class="min-h-screen overflow-x-hidden bg-slate-50 text-slate-900 antialiased dark:bg-slate-950 dark:text-slate-100">
+<body class="min-h-screen overflow-x-hidden">
 <div class="min-h-screen overflow-x-hidden">
     <x-app.nav />
 
@@ -40,4 +39,3 @@
 </div>
 </body>
 </html>
-

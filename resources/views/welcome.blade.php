@@ -1,7 +1,7 @@
 <x-layouts.base title="Welcome">
     <div class="mx-auto max-w-3xl">
         <x-ui.card title="Welcome" description="Blade-based UI shell for the compliance checklist system.">
-            <p class="text-sm text-slate-600">
+            <p class="text-sm leading-relaxed text-ui-fg-muted">
                 Use the navigation above to access the Admin or Auditor areas based on your role.
             </p>
 
@@ -11,6 +11,6 @@
                 </div>
             @endguest
         </x-ui.card>
-            </div>
+    </div>
 </x-layouts.base>
 

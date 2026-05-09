@@ -21,15 +21,17 @@ enum ChecklistInstanceStatus: string
         };
     }
 
+    /**
+     * High-contrast chips for light/dark — neutral base tones + saturated semantic hues.
+     */
     public function badgeClasses(): string
     {
         return match ($this) {
-            self::Draft => 'bg-slate-50 text-slate-800 ring-slate-200 dark:bg-slate-900 dark:text-slate-200 dark:ring-slate-800',
-            self::InProgress => 'bg-amber-50 text-amber-800 ring-amber-200 dark:bg-amber-950/40 dark:text-amber-200 dark:ring-amber-900/40',
-            self::Submitted => 'bg-emerald-50 text-emerald-800 ring-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-200 dark:ring-emerald-900/40',
-            self::Approved => 'bg-emerald-50 text-emerald-800 ring-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-200 dark:ring-emerald-900/40',
-            self::Rejected => 'bg-rose-50 text-rose-800 ring-rose-200 dark:bg-rose-950/40 dark:text-rose-200 dark:ring-rose-900/40',
+            self::Draft => 'bg-neutral-100 text-neutral-900 ring-neutral-400/70 dark:bg-neutral-800 dark:text-neutral-50 dark:ring-neutral-600',
+            self::InProgress => 'bg-amber-100 text-amber-950 ring-amber-500/70 dark:bg-amber-950 dark:text-amber-100 dark:ring-amber-700',
+            self::Submitted => 'bg-emerald-100 text-emerald-950 ring-emerald-600/70 dark:bg-emerald-950 dark:text-emerald-50 dark:ring-emerald-700',
+            self::Approved => 'bg-emerald-100 text-emerald-950 ring-emerald-600/70 dark:bg-emerald-950 dark:text-emerald-50 dark:ring-emerald-700',
+            self::Rejected => 'bg-rose-100 text-rose-950 ring-rose-500/70 dark:bg-rose-950 dark:text-rose-50 dark:ring-rose-700',
         };
     }
 }
-

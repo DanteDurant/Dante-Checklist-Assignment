@@ -1,12 +1,13 @@
-<header class="border-b border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-950">
+<header class="border-b border-ui-border bg-ui-surface shadow-sm shadow-black/[0.04] backdrop-blur-sm dark:shadow-black/25">
     <div class="mx-auto flex max-w-7xl items-center justify-between px-4 py-4 sm:px-6 lg:px-8">
         <div class="flex items-center gap-3 sm:gap-6">
-            <a href="{{ route('home') }}" class="text-sm font-semibold text-slate-900 dark:text-slate-100">
+            <a href="{{ route('home') }}"
+               class="text-sm font-semibold text-ui-fg transition-colors hover:text-ui-fg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ui-ring focus-visible:ring-offset-2 focus-visible:ring-offset-ui-surface">
                 {{ config('app.name', 'Checklist') }}
             </a>
 
             @auth
-                <nav class="hidden items-center gap-3 sm:flex">
+                <nav class="hidden items-center gap-2 sm:flex" aria-label="Main">
                     @if (auth()->user()->hasRole('admin'))
                         <x-app.nav-link :href="route('admin.dashboard')" :active="request()->routeIs('admin.dashboard')">
                             Dashboard
@@ -32,14 +33,16 @@
 
         <div class="flex items-center gap-2 sm:gap-3">
             @auth
-                <div class="hidden text-sm text-slate-600 dark:text-slate-400 sm:block">
-                    {{ auth()->user()->name }} <span class="text-slate-400">({{ auth()->user()->email }})</span>
+                <div class="hidden max-w-[18rem] truncate text-sm text-ui-fg-muted sm:block" title="{{ auth()->user()->email }}">
+                    <span class="font-medium text-ui-fg">{{ auth()->user()->name }}</span>
+                    <span class="text-ui-fg-subtle"> · </span>
+                    <span class="text-ui-fg-subtle">{{ auth()->user()->email }}</span>
                 </div>
             @endauth
 
             <button
                 type="button"
-                class="inline-flex items-center justify-center rounded-md p-2 text-slate-700 ring-1 ring-inset ring-slate-300 transition hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2 dark:text-slate-200 dark:ring-slate-700 dark:hover:bg-slate-900 dark:focus:ring-slate-600 dark:focus:ring-offset-slate-950"
+                class="inline-flex items-center justify-center rounded-md p-2 text-ui-fg-muted ring-1 ring-inset ring-ui-border transition hover:bg-ui-muted hover:text-ui-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ui-ring focus-visible:ring-offset-2 focus-visible:ring-offset-ui-canvas active:bg-ui-elevated"
                 data-theme-toggle
             >
                 <span class="sr-only" data-theme-toggle-label>Toggle theme</span>
@@ -63,7 +66,7 @@
             @auth
                 <button
                     type="button"
-                    class="inline-flex items-center justify-center rounded-md p-2 text-slate-700 ring-1 ring-inset ring-slate-300 hover:bg-slate-50 dark:text-slate-200 dark:ring-slate-700 dark:hover:bg-slate-900 sm:hidden"
+                    class="inline-flex items-center justify-center rounded-md p-2 text-ui-fg-muted ring-1 ring-inset ring-ui-border transition hover:bg-ui-muted hover:text-ui-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ui-ring focus-visible:ring-offset-2 focus-visible:ring-offset-ui-canvas sm:hidden"
                     data-mobile-menu-button
                     aria-controls="mobileNav"
                     aria-expanded="false"
@@ -79,7 +82,7 @@
 
     @auth
         <div class="sm:hidden">
-            <div class="hidden border-t border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-950" id="mobileNav" data-mobile-menu>
+            <div class="hidden border-t border-ui-border bg-ui-surface" id="mobileNav" data-mobile-menu>
                 <div class="space-y-1 px-4 py-3">
                     @if (auth()->user()->hasRole('admin'))
                         <x-app.nav-link class="block w-full" :href="route('admin.dashboard')" :active="request()->routeIs('admin.dashboard')">Dashboard</x-app.nav-link>
@@ -91,10 +94,10 @@
                         <x-app.nav-link class="block w-full" :href="route('auditor.dashboard')" :active="request()->routeIs('auditor.*')">Dashboard</x-app.nav-link>
                     @endif
                 </div>
-                <div class="border-t border-slate-200 px-4 py-3 dark:border-slate-800">
+                <div class="border-t border-ui-border px-4 py-3">
                     <button
                         type="button"
-                        class="inline-flex w-full items-center justify-center gap-2 rounded-md bg-white px-3 py-2 text-sm font-semibold text-slate-900 ring-1 ring-inset ring-slate-300 hover:bg-slate-50 dark:bg-slate-950 dark:text-slate-100 dark:ring-slate-700 dark:hover:bg-slate-900"
+                        class="inline-flex w-full items-center justify-center gap-2 rounded-md bg-ui-muted px-3 py-2 text-sm font-semibold text-ui-fg ring-1 ring-inset ring-ui-border transition hover:bg-ui-elevated focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ui-ring focus-visible:ring-offset-2 focus-visible:ring-offset-ui-surface"
                         data-theme-toggle
                     >
                         <svg data-theme-icon="light" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
@@ -106,18 +109,17 @@
                         <span data-theme-toggle-label>Toggle theme</span>
                     </button>
                 </div>
-                <div class="border-t border-slate-200 px-4 py-3">
+                <div class="border-t border-ui-border px-4 py-3">
                     <form method="POST" action="{{ route('logout') }}">
                         @csrf
                         <x-ui.button type="submit" variant="secondary" class="w-full">Logout</x-ui.button>
                     </form>
                 </div>
-                <div class="border-t border-slate-200 px-4 py-3 dark:border-slate-800">
-                    <div class="text-sm font-medium text-slate-900 dark:text-slate-100">{{ auth()->user()->name }}</div>
-                    <div class="text-sm text-slate-600 dark:text-slate-400">{{ auth()->user()->email }}</div>
+                <div class="border-t border-ui-border bg-ui-muted/40 px-4 py-3">
+                    <div class="text-sm font-semibold text-ui-fg">{{ auth()->user()->name }}</div>
+                    <div class="mt-0.5 text-sm text-ui-fg-muted">{{ auth()->user()->email }}</div>
                 </div>
             </div>
         </div>
     @endauth
 </header>
-

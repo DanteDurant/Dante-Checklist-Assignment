@@ -28,7 +28,7 @@ class ChecklistInstancePolicy
             return true;
         }
 
-        if (!$user->hasRole('auditor') || $instance->auditor_id !== $user->id) {
+        if (! $user->hasRole('auditor') || $instance->auditor_id !== $user->id) {
             return false;
         }
 
@@ -40,5 +40,17 @@ class ChecklistInstancePolicy
     {
         return $this->update($user, $instance);
     }
-}
 
+    public function exportPdf(User $user, ChecklistInstance $instance): bool
+    {
+        if (! $this->view($user, $instance)) {
+            return false;
+        }
+
+        if (! in_array($instance->status, [ChecklistInstanceStatus::Submitted, ChecklistInstanceStatus::Approved], true)) {
+            return false;
+        }
+
+        return $instance->submitted_at !== null;
+    }
+}

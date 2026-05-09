@@ -2,8 +2,77 @@
 @tailwind components;
 @tailwind utilities;
 
+/*
+| Design tokens (.dark + :root) define a neutral enterprise palette.
+| Light: soft off-white canvas, strong ink text.
+| Dark: graphite charcoal (no slate/blue bias); layered surfaces for depth.
+*/
 @layer base {
-  html, body {
-    overflow-x: hidden;
-  }
+    :root {
+        color-scheme: light;
+
+        --ui-canvas: 250 250 250;
+        --ui-surface: 255 255 255;
+        --ui-muted: 244 244 245;
+        --ui-elevated: 236 236 238;
+        --ui-border: 220 220 224;
+        --ui-ring: 59 59 67;
+
+        --ui-fg: 23 23 23;
+        --ui-fg-muted: 64 64 72;
+        --ui-fg-subtle: 110 110 118;
+
+        --ui-fill: 255 255 255;
+        --ui-fill-border: 200 200 206;
+        --ui-fill-placeholder: 120 120 128;
+
+        --ui-accent: 28 28 31;
+        --ui-accent-fg: 250 250 250;
+        --ui-accent-hover: 45 45 50;
+    }
+
+    .dark {
+        color-scheme: dark;
+
+        --ui-canvas: 17 17 18;
+        --ui-surface: 26 26 27;
+        --ui-muted: 34 34 35;
+        --ui-elevated: 41 41 42;
+        --ui-border: 65 65 68;
+        --ui-ring: 214 214 221;
+
+        --ui-fg: 247 247 248;
+        --ui-fg-muted: 216 216 220;
+        --ui-fg-subtle: 167 167 174;
+
+        --ui-fill: 30 30 32;
+        --ui-fill-border: 84 84 90;
+        --ui-fill-placeholder: 145 145 153;
+
+        --ui-accent: 240 240 242;
+        --ui-accent-fg: 18 18 19;
+        --ui-accent-hover: 255 255 255;
+    }
+
+    html,
+    body {
+        overflow-x: hidden;
+    }
+
+    body {
+        @apply min-h-screen bg-ui-canvas text-ui-fg antialiased;
+        font-size: 15px;
+        line-height: 1.55;
+    }
+
+    ::selection {
+        @apply bg-ui-muted text-ui-fg;
+    }
+
+    h1,
+    h2,
+    h3 {
+        @apply text-ui-fg tracking-tight;
+        line-height: 1.25;
+    }
 }

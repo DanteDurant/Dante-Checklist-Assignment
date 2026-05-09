@@ -1,7 +1,7 @@
 <x-layouts.admin title="Templates" heading="Checklist Templates">
     <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-            <p class="text-sm text-slate-500">Manage checklist templates and their questions.</p>
+            <p class="text-sm leading-relaxed text-ui-fg-muted">Manage checklist templates and their questions.</p>
         </div>
         <div>
             <x-ui.button :href="route('admin.templates.create')">New template</x-ui.button>
@@ -14,14 +14,14 @@
                 <x-ui.card>
                     <div class="flex items-start justify-between gap-4">
                         <div class="min-w-0">
-                            <a class="block truncate text-sm font-semibold text-slate-900 hover:underline"
+                            <a class="block truncate text-sm font-semibold text-ui-fg underline decoration-ui-border underline-offset-2 transition hover:text-ui-fg-muted"
                                href="{{ route('admin.templates.show', $t) }}">
                                 {{ $t->name }}
                             </a>
-                            <p class="mt-1 text-sm text-slate-600">
+                            <p class="mt-1 text-sm text-ui-fg-muted">
                                 <x-ui.status-badge :status="$t->status" /> · Questions: {{ $t->questions_count }}
                             </p>
-                            <p class="mt-1 text-xs text-slate-500">
+                            <p class="mt-1 text-xs tabular-nums text-ui-fg-subtle">
                                 Updated: {{ $t->updated_at?->toDateTimeString() }}
                             </p>
                         </div>
@@ -33,7 +33,8 @@
                     <div class="mt-3 flex flex-wrap gap-2">
                         <x-ui.button :href="route('admin.templates.show', $t)" variant="secondary">View</x-ui.button>
                         <form method="POST" action="{{ route('admin.templates.destroy', $t) }}"
-                              data-confirm="Delete this template? This will cascade-delete its questions.">
+                              data-confirm="Delete this template? This will cascade-delete its questions."
+                              class="inline">
                             @csrf
                             @method('DELETE')
                             <x-ui.button type="submit" variant="danger" data-loading-text="Deleting...">Delete</x-ui.button>
@@ -51,17 +52,19 @@
             <x-ui.table :headers="['Title', 'Status', 'Questions', 'Updated', 'Actions']">
                 @forelse ($templates as $t)
                     <tr>
-                        <td class="px-4 py-3 text-sm font-medium text-slate-900">
-                            <a class="hover:underline" href="{{ route('admin.templates.show', $t) }}">{{ $t->name }}</a>
+                        <td class="px-4 py-3 text-sm font-medium text-ui-fg">
+                            <a class="underline decoration-ui-border underline-offset-2 hover:text-ui-fg-muted"
+                               href="{{ route('admin.templates.show', $t) }}">{{ $t->name }}</a>
                         </td>
-                        <td class="px-4 py-3 text-sm text-slate-600"><x-ui.status-badge :status="$t->status" /></td>
-                        <td class="px-4 py-3 text-sm text-slate-600">{{ $t->questions_count }}</td>
-                        <td class="px-4 py-3 text-sm text-slate-600">{{ $t->updated_at?->toDateTimeString() }}</td>
+                        <td class="px-4 py-3 text-sm"><x-ui.status-badge :status="$t->status" /></td>
+                        <td class="px-4 py-3 text-sm tabular-nums text-ui-fg-muted">{{ $t->questions_count }}</td>
+                        <td class="px-4 py-3 text-sm tabular-nums text-ui-fg-muted">{{ $t->updated_at?->toDateTimeString() }}</td>
                         <td class="px-4 py-3 text-sm">
                             <div class="flex flex-wrap gap-2">
                                 <x-ui.button :href="route('admin.templates.edit', $t)" variant="secondary">Edit</x-ui.button>
                                 <form method="POST" action="{{ route('admin.templates.destroy', $t) }}"
-                                      data-confirm="Delete this template? This will cascade-delete its questions.">
+                                      data-confirm="Delete this template? This will cascade-delete its questions."
+                                      class="inline">
                                     @csrf
                                     @method('DELETE')
                                     <x-ui.button type="submit" variant="danger" data-loading-text="Deleting...">Delete</x-ui.button>
@@ -86,4 +89,3 @@
         {{ $templates->links() }}
     </div>
 </x-layouts.admin>
-

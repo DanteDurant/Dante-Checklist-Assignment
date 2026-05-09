@@ -16,7 +16,17 @@
             </form>
         </x-ui.card>
 
-        <div class="lg:col-span-2">
+        <div class="lg:col-span-2 space-y-6">
+            <x-ui.disclosure title="Export my activity (PDF)">
+                <x-export.pdf-options
+                    variant="flush"
+                    :heading="false"
+                    :action="route('auditor.dashboard.export_pdf')"
+                    submit-label="Download activity PDF"
+                    :show-snapshot-dates="true"
+                />
+            </x-ui.disclosure>
+
             <x-ui.card title="Your checklist instances" description="Assigned to you.">
                 <div class="space-y-3 sm:hidden">
                     @forelse ($instances as $i)
@@ -26,16 +36,12 @@
                         <x-ui.card>
                             <div class="flex items-start justify-between gap-4">
                                 <div class="min-w-0">
-                                    <div class="truncate text-sm font-semibold text-slate-900">
+                                    <div class="truncate text-sm font-semibold text-ui-fg">
                                         {{ $i->template?->name ?? ('Template #'.$i->checklist_template_id) }}
                                     </div>
                                     <div class="mt-2 flex flex-wrap items-center gap-2">
-                                        @if ($isEditable)
-                                            <x-ui.status-badge :status="$i->status" />
-                                        @else
-                                            <x-ui.status-badge :status="$i->status" />
-                                        @endif
-                                        <span class="text-xs text-slate-500">
+                                        <x-ui.status-badge :status="$i->status" />
+                                        <span class="text-xs tabular-nums text-ui-fg-subtle">
                                             Submitted: {{ $i->submitted_at?->toDateTimeString() ?? '—' }}
                                         </span>
                                     </div>
@@ -61,17 +67,13 @@
                                 $isEditable = in_array($i->status->value, ['draft', 'in_progress'], true);
                             @endphp
                             <tr>
-                                <td class="px-4 py-3 text-sm font-medium text-slate-900">
+                                <td class="px-4 py-3 text-sm font-medium text-ui-fg">
                                     {{ $i->template?->name ?? ('Template #'.$i->checklist_template_id) }}
                                 </td>
                                 <td class="px-4 py-3 text-sm">
-                                    @if ($isEditable)
-                                        <x-ui.status-badge :status="$i->status" />
-                                    @else
-                                        <x-ui.status-badge :status="$i->status" />
-                                    @endif
+                                    <x-ui.status-badge :status="$i->status" />
                                 </td>
-                                <td class="px-4 py-3 text-sm text-slate-600">
+                                <td class="px-4 py-3 text-sm tabular-nums text-ui-fg-muted">
                                     {{ $i->submitted_at?->toDateTimeString() ?? '—' }}
                                 </td>
                                 <td class="px-4 py-3 text-sm">
@@ -84,7 +86,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="4" class="px-4 py-6 text-sm text-slate-500">No instances yet.</td>
+                                <td colspan="4" class="px-4 py-6 text-sm text-ui-fg-muted">No instances yet.</td>
                             </tr>
                         @endforelse
                     </x-ui.table>
@@ -93,4 +95,3 @@
         </div>
     </div>
 </x-layouts.auditor>
-

@@ -2,8 +2,6 @@
 
 namespace Database\Seeders;
 
-use App\Models\User;
-// use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
 class DatabaseSeeder extends Seeder
@@ -13,9 +11,15 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
+        fake()->seed(1701);
+
         $this->call([
-            RolesAndUsersSeeder::class,
-            DemoChecklistSeeder::class,
+            RolesSeeder::class,
+            UserSeeder::class,
+            ChecklistTemplateSeeder::class,
+            ChecklistQuestionSeeder::class,
+            ChecklistInstanceSeeder::class,
+            ChecklistAnswerSeeder::class,
         ]);
     }
 }

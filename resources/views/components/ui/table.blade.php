@@ -2,14 +2,14 @@
     'headers' => [],
 ])
 
-<div class="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-950">
+<div class="overflow-hidden rounded-xl border border-ui-border bg-ui-surface shadow-sm shadow-black/[0.04] dark:shadow-black/30">
     <div class="overflow-x-auto">
-        <table class="min-w-full divide-y divide-slate-200 dark:divide-slate-800">
+        <table class="min-w-full divide-y divide-ui-border">
         @if (!empty($headers))
-            <thead class="bg-slate-50 dark:bg-slate-900">
+            <thead class="bg-ui-muted">
             <tr>
                 @foreach ($headers as $header)
-                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-600 dark:text-slate-300">
+                    <th scope="col" class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-ui-fg-muted">
                         {{ $header }}
                     </th>
                 @endforeach
@@ -17,10 +17,9 @@
             </thead>
         @endif
 
-        <tbody class="divide-y divide-slate-200 dark:divide-slate-800">
+        <tbody class="divide-y divide-ui-border">
         {{ $slot }}
         </tbody>
         </table>
     </div>
 </div>
-

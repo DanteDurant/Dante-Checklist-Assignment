@@ -48,17 +48,17 @@ php artisan migrate
 
 ## Seed steps
 
+Populate a full demo dataset (recommended after schema changes):
+
 ```bash
-php artisan db:seed
+php artisan migrate:fresh --seed
 ```
 
-Seeders include:
-- `Database\\Seeders\\RolesAndUsersSeeder`: roles + example users
-- `Database\\Seeders\\DemoChecklistSeeder`: demo template/questions + a sample instance/answers
+`DatabaseSeeder` runs, in order: `RolesSeeder`, `UserSeeder`, `ChecklistTemplateSeeder`, `ChecklistQuestionSeeder`, `ChecklistInstanceSeeder`, `ChecklistAnswerSeeder` (realistic templates, auditors, reporting-friendly instances, and type-correct answers).
 
 ## Test credentials
 
-Seeded users (from `database/seeders/RolesAndUsersSeeder.php`):
+Seeded users (`UserSeeder`):
 
 - **Admin**: `admin@example.com` / `password`
 - **Auditor**: `auditor@example.com` / `password`

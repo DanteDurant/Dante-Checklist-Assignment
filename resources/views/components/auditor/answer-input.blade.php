@@ -29,6 +29,8 @@
 
     $isArrayInput = in_array($type, ['checkbox', 'multi_select'], true);
     $selectedValues = $isArrayInput ? (is_array($value) ? $value : []) : null;
+
+    $choiceRing = 'border-ui-fill-border text-ui-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ui-ring focus-visible:ring-offset-2 focus-visible:ring-offset-ui-canvas disabled:opacity-45';
 @endphp
 
 @if ($type === 'textarea')
@@ -55,8 +57,8 @@
         <input id="q_{{ $question->id }}" name="{{ $name }}" type="checkbox" value="1"
                @checked((bool) $value)
                @disabled($disabled)
-               class="h-4 w-4 rounded border-slate-300 text-slate-900 focus:ring-slate-900" />
-        <label for="q_{{ $question->id }}" class="text-sm text-slate-700">Yes</label>
+               class="h-4 w-4 rounded {{ $choiceRing }}" />
+        <label for="q_{{ $question->id }}" class="text-sm font-medium text-ui-fg-muted">Yes</label>
     </div>
 @elseif (in_array($type, ['select', 'single_select'], true))
     <x-ui.select :name="$name" :disabled="$disabled">
@@ -68,33 +70,32 @@
         @endforeach
     </x-ui.select>
 @elseif ($type === 'radio')
-    <div class="space-y-2">
+    <div class="space-y-2.5">
         @foreach ($options as $opt)
-            <label class="flex items-center gap-2 text-sm text-slate-700">
+            <label class="flex cursor-pointer items-start gap-2.5 text-sm text-ui-fg-muted">
                 <input type="radio" name="{{ $name }}" value="{{ $opt['value'] }}"
                        @checked((string) $value === (string) $opt['value'])
                        @disabled($disabled)
-                       class="h-4 w-4 border-slate-300 text-slate-900 focus:ring-slate-900" />
-                <span>{{ $opt['label'] }}</span>
+                       class="mt-0.5 h-4 w-4 {{ $choiceRing }}" />
+                <span class="leading-snug">{{ $opt['label'] }}</span>
             </label>
         @endforeach
     </div>
 @elseif (in_array($type, ['checkbox', 'multi_select'], true))
-    <div class="space-y-2">
+    <div class="space-y-2.5">
         @foreach ($options as $opt)
-            <label class="flex items-center gap-2 text-sm text-slate-700">
+            <label class="flex cursor-pointer items-start gap-2.5 text-sm text-ui-fg-muted">
                 <input type="checkbox" name="{{ $name }}[]" value="{{ $opt['value'] }}"
                        @checked(in_array((string) $opt['value'], array_map('strval', $selectedValues ?? []), true))
                        @disabled($disabled)
-                       class="h-4 w-4 rounded border-slate-300 text-slate-900 focus:ring-slate-900" />
-                <span>{{ $opt['label'] }}</span>
+                       class="mt-0.5 h-4 w-4 rounded {{ $choiceRing }}" />
+                <span class="leading-snug">{{ $opt['label'] }}</span>
             </label>
         @endforeach
     </div>
 @else
     <x-ui.textarea :name="$name" rows="3" :disabled="$disabled">{{ is_string($value) ? $value : json_encode($value) }}</x-ui.textarea>
-    <p class="mt-1 text-xs text-slate-500">
+    <p class="mt-1 text-xs text-ui-fg-subtle">
         This answer type is not fully implemented in Blade yet.
     </p>
 @endif
-

@@ -55,9 +55,12 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // Basic UI enhancements (no framework):
-// - Disable submit buttons while submitting
+// - Disable submit buttons while submitting (full page navigations only)
 // - Standard confirmation dialogs via data-confirm
 // - Prevent double submits
+//
+// IMPORTANT: GET forms that return Content-Disposition file downloads do NOT unload the page.
+// Those forms are handled separately via data-pdf-export (fetch + blob) so loading state always clears.
 
 function setButtonLoading(button, isLoading) {
     const loadingText = button.getAttribute('data-loading-text') || 'Working...';
@@ -81,9 +84,134 @@ function setButtonLoading(button, isLoading) {
     }
 }
 
+/** Restore stuck loading states after back-forward cache or interrupted navigations */
+function resetAllSubmitLocks() {
+    document.querySelectorAll('form[data-submitting="1"]').forEach((form) => {
+        form.dataset.submitting = '';
+        form.querySelectorAll('button[type="submit"]').forEach((btn) => setButtonLoading(btn, false));
+    });
+}
+
+window.addEventListener('pageshow', () => {
+    resetAllSubmitLocks();
+});
+
+function parseFilenameFromContentDisposition(header) {
+    if (!header || typeof header !== 'string') {
+        return 'export.pdf';
+    }
+    const utf8 = /filename\*=UTF-8''([^;\n]+)/i.exec(header);
+    if (utf8) {
+        try {
+            return decodeURIComponent(utf8[1].trim());
+        } catch {
+            return 'export.pdf';
+        }
+    }
+    const quoted = /filename="([^"]+)"/i.exec(header);
+    if (quoted) {
+        return quoted[1];
+    }
+    const loose = /filename=([^;\n]+)/i.exec(header);
+    if (loose) {
+        return loose[1].replace(/^["']|["']$/g, '').trim();
+    }
+    return 'export.pdf';
+}
+
+const PDF_FETCH_TIMEOUT_MS = 120000;
+
+async function handlePdfExport(form) {
+    if (form.dataset.pdfInFlight === '1') {
+        return;
+    }
+
+    const method = (form.getAttribute('method') || 'GET').toUpperCase();
+    if (method !== 'GET') {
+        return;
+    }
+
+    form.dataset.pdfInFlight = '1';
+
+    const buttons = form.querySelectorAll('button[type="submit"]');
+    const resetFlight = () => {
+        form.dataset.pdfInFlight = '';
+    };
+
+    const resetButtons = () => {
+        buttons.forEach((btn) => setButtonLoading(btn, false));
+    };
+
+    buttons.forEach((btn) => setButtonLoading(btn, true));
+
+    const controller = new AbortController();
+    const abortTimer = window.setTimeout(() => controller.abort(), PDF_FETCH_TIMEOUT_MS);
+
+    try {
+        const url = new URL(form.action, window.location.origin);
+        const fd = new FormData(form);
+        fd.forEach((value, key) => {
+            url.searchParams.set(key, value);
+        });
+
+        const res = await fetch(url.toString(), {
+            method: 'GET',
+            credentials: 'same-origin',
+            signal: controller.signal,
+            headers: {
+                Accept: 'application/pdf,application/octet-stream;q=0.9,*/*;q=0.8',
+                'X-Requested-With': 'XMLHttpRequest',
+            },
+        });
+
+        window.clearTimeout(abortTimer);
+
+        if (!res.ok) {
+            throw new Error(`Server responded with ${res.status}`);
+        }
+
+        const ct = (res.headers.get('Content-Type') || '').toLowerCase();
+        if (!ct.includes('pdf') && !ct.includes('octet-stream') && !ct.includes('application/download')) {
+            await res.text();
+            throw new Error('Unexpected response — not a PDF');
+        }
+
+        const blob = await res.blob();
+        const disposition = res.headers.get('Content-Disposition') || '';
+        const filename = parseFilenameFromContentDisposition(disposition);
+
+        const blobUrl = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = blobUrl;
+        a.download = filename;
+        a.rel = 'noopener';
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        window.setTimeout(() => URL.revokeObjectURL(blobUrl), 60000);
+    } catch (err) {
+        window.clearTimeout(abortTimer);
+        if (err?.name === 'AbortError') {
+            window.alert('PDF export timed out. Please try again with fewer filters or a smaller scope.');
+        } else {
+            console.error(err);
+            window.alert('PDF export failed. Please try again.');
+        }
+    } finally {
+        resetFlight();
+        resetButtons();
+    }
+}
+
 document.addEventListener('submit', (event) => {
     const form = event.target;
     if (!(form instanceof HTMLFormElement)) return;
+
+    if (form.hasAttribute('data-pdf-export')) {
+        event.preventDefault();
+        void handlePdfExport(form);
+        return;
+    }
 
     // Confirmation dialog (opt-in).
     const submitter = event.submitter instanceof HTMLElement ? event.submitter : null;
@@ -102,7 +230,7 @@ document.addEventListener('submit', (event) => {
     }
     form.dataset.submitting = '1';
 
-    // Disable submit buttons to show a basic loading state.
+    // Disable submit buttons to show a basic loading state (safe: page will reload or navigate).
     const submitButtons = form.querySelectorAll('button[type="submit"]');
     submitButtons.forEach((btn) => setButtonLoading(btn, true));
 });
@@ -213,4 +341,3 @@ document.addEventListener('click', (event) => {
         passwordInput.focus();
     }
 });
-

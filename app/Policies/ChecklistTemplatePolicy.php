@@ -36,5 +36,9 @@ class ChecklistTemplatePolicy
     {
         return $user->hasRole('admin');
     }
-}
 
+    public function exportPdf(User $user, ChecklistTemplate $template): bool
+    {
+        return $user->hasRole('admin');
+    }
+}

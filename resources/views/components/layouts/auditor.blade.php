@@ -1,14 +1,13 @@
 <x-layouts.base :title="$title ?? 'Auditor'">
-    <div class="mb-6 flex items-center justify-between">
+    <div class="mb-8 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div>
-            <p class="text-sm font-medium text-slate-500">Auditor</p>
-            <h1 class="text-2xl font-semibold text-slate-900">{{ $heading ?? 'Dashboard' }}</h1>
+            <p class="text-xs font-semibold uppercase tracking-wider text-ui-fg-subtle">Auditor</p>
+            <h1 class="mt-1 text-2xl font-semibold text-ui-fg">{{ $heading ?? 'Dashboard' }}</h1>
         </div>
-        <div class="flex items-center gap-2">
+        <div class="flex flex-wrap items-center gap-2">
             {{ $actions ?? '' }}
         </div>
     </div>
 
     {{ $slot }}
 </x-layouts.base>
-
