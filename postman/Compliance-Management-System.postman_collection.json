@@ -1,0 +1,230 @@
+{
+  "info": {
+    "name": "Compliance Management System API",
+    "_postman_id": "b5b31f2c-7f0b-4f74-9a6d-9b2c1b0e7f11",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "base_url", "value": "http://localhost:8000" },
+    { "key": "token", "value": "" }
+  ],
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Login (Admin)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": { "raw": "{{base_url}}/api/login", "host": ["{{base_url}}"], "path": ["api", "login"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@example.com\",\n  \"password\": \"password\",\n  \"device_name\": \"postman\"\n}\n",
+              "options": { "raw": { "language": "json" } }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const json = pm.response.json();",
+                  "if (json?.success && json?.data?.token) {",
+                  "  pm.collectionVariables.set('token', json.data.token);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Login (Auditor)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": { "raw": "{{base_url}}/api/login", "host": ["{{base_url}}"], "path": ["api", "login"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"auditor@example.com\",\n  \"password\": \"password\",\n  \"device_name\": \"postman\"\n}\n",
+              "options": { "raw": { "language": "json" } }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const json = pm.response.json();",
+                  "if (json?.success && json?.data?.token) {",
+                  "  pm.collectionVariables.set('token', json.data.token);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Me",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": { "raw": "{{base_url}}/api/me", "host": ["{{base_url}}"], "path": ["api", "me"] }
+          }
+        },
+        {
+          "name": "Logout",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": { "raw": "{{base_url}}/api/logout", "host": ["{{base_url}}"], "path": ["api", "logout"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Templates (Admin)",
+      "item": [
+        {
+          "name": "List templates",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": { "raw": "{{base_url}}/api/templates?per_page=15", "host": ["{{base_url}}"], "path": ["api", "templates"], "query": [{ "key": "per_page", "value": "15" }] }
+          }
+        },
+        {
+          "name": "Create template",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": { "raw": "{{base_url}}/api/templates", "host": ["{{base_url}}"], "path": ["api", "templates"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Demo Template\",\n  \"description\": \"Created via API\",\n  \"status\": \"draft\"\n}\n",
+              "options": { "raw": { "language": "json" } }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Questions (Admin)",
+      "item": [
+        {
+          "name": "Create question (choice)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": { "raw": "{{base_url}}/api/templates/{{template_id}}/questions", "host": ["{{base_url}}"], "path": ["api", "templates", "{{template_id}}", "questions"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"question_text\": \"Pick one\",\n  \"answer_type\": \"select\",\n  \"required\": true,\n  \"sort_order\": 1,\n  \"options\": [\n    {\"value\": \"a\", \"label\": \"Option A\"},\n    {\"value\": \"b\", \"label\": \"Option B\"}\n  ]\n}\n",
+              "options": { "raw": { "language": "json" } }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Checklists (Auditor)",
+      "item": [
+        {
+          "name": "List my checklists",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": { "raw": "{{base_url}}/api/checklists", "host": ["{{base_url}}"], "path": ["api", "checklists"] }
+          }
+        },
+        {
+          "name": "Start checklist",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": { "raw": "{{base_url}}/api/checklists/start/{{template_id}}", "host": ["{{base_url}}"], "path": ["api", "checklists", "start", "{{template_id}}"] }
+          }
+        },
+        {
+          "name": "Save draft (map of question_id -> value)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": { "raw": "{{base_url}}/api/checklists/{{checklist_id}}/save-draft", "host": ["{{base_url}}"], "path": ["api", "checklists", "{{checklist_id}}", "save-draft"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"answers\": {\n    \"123\": \"some text\",\n    \"124\": 12,\n    \"125\": \"2026-05-09\",\n    \"126\": [\"a\", \"b\"]\n  }\n}\n",
+              "options": { "raw": { "language": "json" } }
+            }
+          }
+        },
+        {
+          "name": "Complete checklist",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": { "raw": "{{base_url}}/api/checklists/{{checklist_id}}/complete", "host": ["{{base_url}}"], "path": ["api", "checklists", "{{checklist_id}}", "complete"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Reports (Admin)",
+      "item": [
+        {
+          "name": "Reports (filters)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/reports?date_from=&date_to=&template_id=&auditor_id=&q=&per_page=15",
+              "host": ["{{base_url}}"],
+              "path": ["api", "reports"],
+              "query": [
+                { "key": "date_from", "value": "" },
+                { "key": "date_to", "value": "" },
+                { "key": "template_id", "value": "" },
+                { "key": "auditor_id", "value": "" },
+                { "key": "q", "value": "" },
+                { "key": "per_page", "value": "15" }
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
+

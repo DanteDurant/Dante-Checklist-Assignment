@@ -9,6 +9,10 @@ use App\Http\Controllers\Api\V1\ChecklistQuestionController;
 use App\Http\Controllers\Api\V1\ChecklistTemplateController;
 use App\Http\Controllers\Api\V1\Auditor\ChecklistInstanceController;
 use App\Http\Controllers\Api\V1\Reports\ChecklistInstanceReportController;
+use App\Http\Controllers\Api\AuthController as PublicAuthController;
+use App\Http\Controllers\Api\TemplatesController;
+use App\Http\Controllers\Api\QuestionsController as PublicQuestionsController;
+use App\Http\Controllers\Api\ChecklistsController as PublicChecklistsController;
 
 Route::prefix('v1')->group(function () {
     Route::post('/auth/login', [AuthController::class, 'login']);
@@ -54,5 +58,41 @@ Route::prefix('v1')->group(function () {
             Route::put('/auditor/checklist-instances/{instance}/answers', [ChecklistInstanceController::class, 'saveProgress']);
             Route::post('/auditor/checklist-instances/{instance}/complete', [ChecklistInstanceController::class, 'complete']);
         });
+    });
+});
+
+/*
+|--------------------------------------------------------------------------
+| Public External API (stable /api/*)
+|--------------------------------------------------------------------------
+*/
+Route::post('/login', [PublicAuthController::class, 'login']);
+
+Route::middleware('auth:sanctum')->group(function () {
+    Route::post('/logout', [PublicAuthController::class, 'logout']);
+    Route::get('/me', [PublicAuthController::class, 'me']);
+
+    // Admin resources
+    Route::middleware('role:admin')->group(function () {
+        Route::get('/templates', [TemplatesController::class, 'index']);
+        Route::post('/templates', [TemplatesController::class, 'store']);
+        Route::get('/templates/{template}', [TemplatesController::class, 'show']);
+        Route::put('/templates/{template}', [TemplatesController::class, 'update']);
+        Route::delete('/templates/{template}', [TemplatesController::class, 'destroy']);
+
+        Route::post('/templates/{template}/questions', [PublicQuestionsController::class, 'store']);
+        Route::put('/questions/{question}', [PublicQuestionsController::class, 'update']);
+        Route::delete('/questions/{question}', [PublicQuestionsController::class, 'destroy']);
+
+        Route::get('/reports', [PublicChecklistsController::class, 'reports']);
+    });
+
+    // Auditor resources
+    Route::middleware('role:auditor')->group(function () {
+        Route::get('/checklists', [PublicChecklistsController::class, 'index']);
+        Route::post('/checklists/start/{template}', [PublicChecklistsController::class, 'start']);
+        Route::get('/checklists/{checklist}', [PublicChecklistsController::class, 'show']);
+        Route::put('/checklists/{checklist}/save-draft', [PublicChecklistsController::class, 'saveDraft']);
+        Route::put('/checklists/{checklist}/complete', [PublicChecklistsController::class, 'complete']);
     });
 });

@@ -1,6 +1,6 @@
 <x-layouts.base title="Home">
     <div class="mx-auto max-w-3xl">
-        <x-ui.card title="Compliance Checklist System" description="Blade + Tailwind UI shell with role-based navigation.">
+        <x-ui.card title="Compliance Checklist System">
             @auth
                 <p class="text-sm text-slate-600">
                     You are logged in as <span class="font-medium">{{ auth()->user()->email }}</span>.
