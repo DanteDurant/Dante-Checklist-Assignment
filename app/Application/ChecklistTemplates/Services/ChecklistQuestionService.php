@@ -20,7 +20,7 @@ class ChecklistQuestionService
     }
 
     /**
-     * @param array{question_text:string, answer_type:string, required?:bool, sort_order?:int} $data
+     * @param array{question_text:string, answer_type:string, required?:bool, sort_order?:int, options?:array<int, array{value:string,label:string}>|null} $data
      */
     public function create(ChecklistTemplate $template, array $data): ChecklistQuestion
     {
@@ -32,6 +32,7 @@ class ChecklistQuestionService
             $question->type = ChecklistQuestionType::from($data['answer_type']);
             $question->is_required = (bool) ($data['required'] ?? false);
             $question->sort_order = (int) ($data['sort_order'] ?? 0);
+            $question->options = $data['options'] ?? null;
             $question->is_active = true;
             $question->save();
 
@@ -40,7 +41,7 @@ class ChecklistQuestionService
     }
 
     /**
-     * @param array{question_text?:string, answer_type?:string, required?:bool, sort_order?:int} $data
+     * @param array{question_text?:string, answer_type?:string, required?:bool, sort_order?:int, options?:array<int, array{value:string,label:string}>|null} $data
      */
     public function update(ChecklistQuestion $question, array $data): ChecklistQuestion
     {
@@ -59,6 +60,10 @@ class ChecklistQuestionService
 
             if (array_key_exists('sort_order', $data)) {
                 $question->sort_order = (int) $data['sort_order'];
+            }
+
+            if (array_key_exists('options', $data)) {
+                $question->options = $data['options'];
             }
 
             $question->save();

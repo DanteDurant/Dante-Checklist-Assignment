@@ -5,7 +5,7 @@
 <x-layouts.auditor :title="'Checklist: '.($instance->template?->name ?? $instance->id)" :heading="$instance->template?->name ?? 'Checklist Instance'">
     <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div class="text-sm text-slate-600">
-            <span class="font-medium text-slate-900">Status:</span> {{ $instance->status->value }}
+            <span class="font-medium text-slate-900">Status:</span> <x-ui.status-badge :status="$instance->status" />
             <span class="mx-2 text-slate-300">•</span>
             <span class="font-medium text-slate-900">Version:</span> {{ $instance->current_version }}
         </div>
@@ -27,9 +27,22 @@
 
                             $answerKey = "answers.{$q->id}";
 
-                            $textValue = old($answerKey, $stored['text'] ?? '');
-                            $numberValue = old($answerKey, $stored['number'] ?? '');
-                            $boolValue = old($answerKey, $stored['boolean'] ?? false);
+                            $type = $q->type?->value;
+
+                            $oldValue = old($answerKey);
+                            $value = $oldValue !== null
+                                ? $oldValue
+                                : match ($type) {
+                                    'boolean' => (bool) ($stored['boolean'] ?? false),
+                                    'number' => $stored['number'] ?? null,
+                                    'date' => $stored['date'] ?? null,
+                                    'datetime' => $stored['datetime'] ?? null,
+                                    'select', 'single_select', 'radio' => $stored['choice'] ?? null,
+                                    'checkbox', 'multi_select' => $stored['choices'] ?? [],
+                                    'textarea' => $stored['text'] ?? null,
+                                    'text', 'email', 'phone', 'url' => $stored['text'] ?? null,
+                                    default => $stored,
+                                };
                         @endphp
 
                         <div class="rounded-lg border border-slate-200 bg-white p-4">
@@ -51,25 +64,12 @@
                             </div>
 
                             <div class="mt-3">
-                                @if ($q->type->value === 'text')
-                                    <x-ui.input name="answers[{{ $q->id }}]" type="text" value="{{ $textValue }}" :disabled="!$isEditable" />
-                                @elseif ($q->type->value === 'number')
-                                    <x-ui.input name="answers[{{ $q->id }}]" type="number" step="any" value="{{ $numberValue }}" :disabled="!$isEditable" />
-                                @elseif ($q->type->value === 'boolean')
-                                    <div class="flex items-center gap-2">
-                                        <input type="hidden" name="answers[{{ $q->id }}]" value="0" />
-                                        <input id="q_{{ $q->id }}" name="answers[{{ $q->id }}]" type="checkbox" value="1"
-                                               @checked((bool) $boolValue)
-                                               @disabled(!$isEditable)
-                                               class="h-4 w-4 rounded border-slate-300 text-slate-900 focus:ring-slate-900" />
-                                        <label for="q_{{ $q->id }}" class="text-sm text-slate-700">Yes</label>
-                                    </div>
-                                @else
-                                    <x-ui.textarea name="answers[{{ $q->id }}]" rows="3" :disabled="!$isEditable">{{ old($answerKey, json_encode($stored)) }}</x-ui.textarea>
-                                    <p class="mt-1 text-xs text-slate-500">
-                                        This answer type is not fully implemented in Blade yet.
-                                    </p>
-                                @endif
+                                <x-auditor.answer-input
+                                    :question="$q"
+                                    :name="'answers['.$q->id.']'"
+                                    :value="$value"
+                                    :disabled="!$isEditable"
+                                />
 
                                 @error($answerKey)
                                 <p class="mt-2 text-sm text-rose-600">{{ $message }}</p>
@@ -90,6 +90,7 @@
                         <button type="submit"
                                 formaction="{{ route('auditor.instances.submit', $instance) }}"
                                 data-loading-text="Submitting..."
+                                data-confirm="Submit this checklist? You won’t be able to edit answers after submission."
                                 class="inline-flex items-center justify-center rounded-md bg-slate-900 px-3 py-2 text-sm font-semibold text-white transition hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-900 focus:ring-offset-2">
                             Submit checklist
                         </button>

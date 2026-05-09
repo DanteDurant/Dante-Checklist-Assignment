@@ -144,8 +144,40 @@ class ChecklistInstanceController extends Controller
 
             $value = match ($question->type) {
                 ChecklistQuestionType::Boolean => ['boolean' => (bool) $rawValue],
-                ChecklistQuestionType::Number => ['number' => ($rawValue === '' || $rawValue === null) ? null : (float) $rawValue],
-                ChecklistQuestionType::Text => ['text' => ($rawValue === null) ? null : (string) $rawValue],
+
+                ChecklistQuestionType::Number => [
+                    'number' => ($rawValue === '' || $rawValue === null) ? null : (float) $rawValue,
+                ],
+
+                ChecklistQuestionType::Date => [
+                    'date' => ($rawValue === '' || $rawValue === null) ? null : (string) $rawValue,
+                ],
+
+                ChecklistQuestionType::DateTime => [
+                    'datetime' => ($rawValue === '' || $rawValue === null) ? null : (string) $rawValue,
+                ],
+
+                ChecklistQuestionType::Select,
+                ChecklistQuestionType::Radio,
+                ChecklistQuestionType::SingleSelect => [
+                    'choice' => ($rawValue === '' || $rawValue === null) ? null : (string) $rawValue,
+                ],
+
+                ChecklistQuestionType::Checkbox,
+                ChecklistQuestionType::MultiSelect => [
+                    'choices' => is_array($rawValue)
+                        ? array_values(array_filter(array_map('strval', $rawValue), fn ($v) => $v !== ''))
+                        : [],
+                ],
+
+                ChecklistQuestionType::Textarea,
+                ChecklistQuestionType::Text,
+                ChecklistQuestionType::Email,
+                ChecklistQuestionType::Phone,
+                ChecklistQuestionType::Url => [
+                    'text' => ($rawValue === null) ? null : (string) $rawValue,
+                ],
+
                 default => ['raw' => $rawValue],
             };
 

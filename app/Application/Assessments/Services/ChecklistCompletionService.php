@@ -100,7 +100,8 @@ class ChecklistCompletionService
                 ->where('checklist_template_id', $instance->checklist_template_id)
                 ->where('is_active', true)
                 ->where('is_required', true)
-                ->pluck('id');
+                ->get(['id', 'type'])
+                ->keyBy('id');
 
             $answers = ChecklistAnswer::query()
                 ->where('checklist_instance_id', $instance->id)
@@ -110,7 +111,8 @@ class ChecklistCompletionService
 
             $missing = [];
 
-            foreach ($requiredQuestions as $questionId) {
+            foreach ($requiredQuestions as $questionId => $question) {
+                $questionId = (int) $questionId;
                 $answer = $answers->get($questionId);
 
                 if (!$answer) {
@@ -124,7 +126,7 @@ class ChecklistCompletionService
                     continue;
                 }
 
-                if ($answer->value === null || $answer->value === [] || $answer->value === '') {
+                if ($this->isEmptyAnswerValue($question->type, $answer->value)) {
                     $missing[] = (int) $questionId;
                 }
             }
@@ -141,6 +143,41 @@ class ChecklistCompletionService
 
             return $instance->fresh();
         });
+    }
+
+    /**
+     * @param array<string, mixed>|null $value
+     */
+    private function isEmptyAnswerValue(\App\Enums\ChecklistQuestionType $type, ?array $value): bool
+    {
+        if ($value === null) {
+            return true;
+        }
+
+        return match ($type) {
+            \App\Enums\ChecklistQuestionType::Boolean => !array_key_exists('boolean', $value),
+
+            \App\Enums\ChecklistQuestionType::Number => !isset($value['number']) || $value['number'] === '',
+
+            \App\Enums\ChecklistQuestionType::Date => empty($value['date']),
+
+            \App\Enums\ChecklistQuestionType::DateTime => empty($value['datetime']),
+
+            \App\Enums\ChecklistQuestionType::Select,
+            \App\Enums\ChecklistQuestionType::Radio,
+            \App\Enums\ChecklistQuestionType::SingleSelect => empty($value['choice']),
+
+            \App\Enums\ChecklistQuestionType::Checkbox,
+            \App\Enums\ChecklistQuestionType::MultiSelect => empty($value['choices']) || (is_array($value['choices']) && count($value['choices']) === 0),
+
+            \App\Enums\ChecklistQuestionType::Textarea,
+            \App\Enums\ChecklistQuestionType::Text,
+            \App\Enums\ChecklistQuestionType::Email,
+            \App\Enums\ChecklistQuestionType::Phone,
+            \App\Enums\ChecklistQuestionType::Url => trim((string) ($value['text'] ?? '')) === '',
+
+            default => $value === [] || $value === ['raw' => null] || $value === ['raw' => ''],
+        };
     }
 
     private function assertEditable(ChecklistInstance $instance): void

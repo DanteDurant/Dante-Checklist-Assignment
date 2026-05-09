@@ -31,7 +31,7 @@
                         <x-ui.card>
                             <div class="text-sm font-semibold text-slate-900">{{ $t->name }}</div>
                             <div class="mt-1 text-sm text-slate-600">
-                                Status: {{ $t->status->value }} · Questions: {{ $t->questions_count }}
+                                <x-ui.status-badge :status="$t->status" /> · Questions: {{ $t->questions_count }}
                             </div>
                         </x-ui.card>
                     @empty
@@ -44,7 +44,7 @@
                         @forelse ($templates as $t)
                             <tr>
                                 <td class="px-4 py-3 text-sm font-medium text-slate-900">{{ $t->name }}</td>
-                                <td class="px-4 py-3 text-sm text-slate-600">{{ $t->status->value }}</td>
+                                <td class="px-4 py-3 text-sm text-slate-600"><x-ui.status-badge :status="$t->status" /></td>
                                 <td class="px-4 py-3 text-sm text-slate-600">{{ $t->questions_count }}</td>
                             </tr>
                         @empty

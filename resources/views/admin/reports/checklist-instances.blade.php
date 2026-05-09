@@ -62,7 +62,7 @@
                                     </div>
                                     <div>
                                         <div class="text-xs font-semibold uppercase tracking-wide text-slate-500">Status</div>
-                                        <div class="text-sm text-slate-700">{{ $row->status->value }}</div>
+                                        <div class="text-sm text-slate-700"><x-ui.status-badge :status="$row->status" /></div>
                                     </div>
                                 </div>
                             </div>
@@ -86,7 +86,7 @@
                                     {{ $row->submitted_at?->toDateTimeString() ?? '—' }}
                                 </td>
                                 <td class="px-4 py-3 text-sm text-slate-700">
-                                    {{ $row->status->value }}
+                                    <x-ui.status-badge :status="$row->status" />
                                 </td>
                             </tr>
                         @empty

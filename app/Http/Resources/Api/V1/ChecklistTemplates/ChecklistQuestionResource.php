@@ -19,9 +19,13 @@ class ChecklistQuestionResource extends JsonResource
             'id' => $this->id,
             'checklist_template_id' => $this->checklist_template_id,
             'question_text' => $this->label,
+            'help_text' => $this->help_text,
             'answer_type' => $this->type->value,
             'required' => (bool) $this->is_required,
             'sort_order' => $this->sort_order,
+            'options' => $this->options,
+            'validation' => $this->validation,
+            'is_active' => (bool) $this->is_active,
             'created_at' => $this->created_at?->toISOString(),
             'updated_at' => $this->updated_at?->toISOString(),
         ];

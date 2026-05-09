@@ -1,15 +1,29 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="scroll-smooth">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
-    <title>{{ $title ?? config('app.name', 'Checklist') }}</title>
+    <title>{{ $title ?? config('app.name', 'Compliance Management System') }}</title>
+
+    <script>
+        // Prevent theme flash: apply theme before CSS loads.
+        (function () {
+            try {
+                const stored = localStorage.getItem('theme'); // 'light' | 'dark' | null
+                // Light is the default unless the user explicitly chose dark.
+                const theme = stored || 'light';
+                const root = document.documentElement;
+                root.classList.toggle('dark', theme === 'dark');
+                root.style.colorScheme = theme === 'dark' ? 'dark' : 'light';
+            } catch (e) {}
+        })();
+    </script>
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
-<body class="min-h-screen overflow-x-hidden bg-slate-50 text-slate-900">
+<body class="min-h-screen overflow-x-hidden bg-slate-50 text-slate-900 antialiased dark:bg-slate-950 dark:text-slate-100">
 <div class="min-h-screen overflow-x-hidden">
     <x-app.nav />
 

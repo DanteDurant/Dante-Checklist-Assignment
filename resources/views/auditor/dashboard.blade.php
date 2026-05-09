@@ -31,13 +31,9 @@
                                     </div>
                                     <div class="mt-2 flex flex-wrap items-center gap-2">
                                         @if ($isEditable)
-                                            <span class="rounded-full bg-amber-50 px-2 py-1 text-xs font-semibold text-amber-800 ring-1 ring-inset ring-amber-200">
-                                                {{ $i->status->value === 'draft' ? 'Draft' : 'In progress' }}
-                                            </span>
+                                            <x-ui.status-badge :status="$i->status" />
                                         @else
-                                            <span class="rounded-full bg-emerald-50 px-2 py-1 text-xs font-semibold text-emerald-800 ring-1 ring-inset ring-emerald-200">
-                                                Completed
-                                            </span>
+                                            <x-ui.status-badge :status="$i->status" />
                                         @endif
                                         <span class="text-xs text-slate-500">
                                             Submitted: {{ $i->submitted_at?->toDateTimeString() ?? '—' }}
@@ -70,13 +66,9 @@
                                 </td>
                                 <td class="px-4 py-3 text-sm">
                                     @if ($isEditable)
-                                        <span class="rounded-full bg-amber-50 px-2 py-1 text-xs font-semibold text-amber-800 ring-1 ring-inset ring-amber-200">
-                                            {{ $i->status->value === 'draft' ? 'Draft' : 'In progress' }}
-                                        </span>
+                                        <x-ui.status-badge :status="$i->status" />
                                     @else
-                                        <span class="rounded-full bg-emerald-50 px-2 py-1 text-xs font-semibold text-emerald-800 ring-1 ring-inset ring-emerald-200">
-                                            Completed
-                                        </span>
+                                        <x-ui.status-badge :status="$i->status" />
                                     @endif
                                 </td>
                                 <td class="px-4 py-3 text-sm text-slate-600">

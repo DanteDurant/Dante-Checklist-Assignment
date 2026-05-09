@@ -1,7 +1,7 @@
 <x-layouts.admin :title="$template->name" :heading="$template->name">
     <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div class="text-sm text-slate-600">
-            <span class="font-medium text-slate-900">Status:</span> {{ $template->status->value }}
+            <span class="font-medium text-slate-900">Status:</span> <x-ui.status-badge :status="$template->status" />
             <span class="mx-2 text-slate-300">•</span>
             <span class="font-medium text-slate-900">Questions:</span> {{ $template->questions->count() }}
         </div>
@@ -120,30 +120,46 @@
                         @enderror
                     </div>
 
-                    <div>
-                        <label class="block text-sm font-medium text-slate-700" for="answer_type">Answer type</label>
-                        <select id="answer_type" name="answer_type" required
-                                class="mt-1 w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm shadow-sm focus:border-slate-900 focus:outline-none focus:ring-1 focus:ring-slate-900">
-                            @foreach (\App\Enums\ChecklistQuestionType::cases() as $type)
-                                <option value="{{ $type->value }}" @selected(old('answer_type') === $type->value)>
-                                    {{ str_replace('_', ' ', ucfirst($type->value)) }}
-                                </option>
-                            @endforeach
-                        </select>
-                        @error('answer_type')
-                        <p class="mt-1 text-sm text-rose-600">{{ $message }}</p>
-                        @enderror
+                    <div class="grid gap-4 sm:grid-cols-2">
+                        <div>
+                            <label class="block text-sm font-medium text-slate-700" for="answer_type">Answer type</label>
+                            <select id="answer_type" name="answer_type" required
+                                    class="mt-1 w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm shadow-sm focus:border-slate-900 focus:outline-none focus:ring-1 focus:ring-slate-900">
+                                @foreach (\App\Enums\ChecklistQuestionType::cases() as $type)
+                                    <option value="{{ $type->value }}" @selected(old('answer_type') === $type->value)>
+                                        {{ str_replace('_', ' ', ucfirst($type->value)) }}
+                                    </option>
+                                @endforeach
+                            </select>
+                            @error('answer_type')
+                            <p class="mt-1 text-sm text-rose-600">{{ $message }}</p>
+                            @enderror
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-slate-700" for="required">Required</label>
+                            <div class="mt-2 flex items-center gap-2">
+                                <input id="required" name="required" type="checkbox" value="1"
+                                       class="h-4 w-4 rounded border-slate-300 text-slate-900 focus:ring-slate-900"
+                                       @checked(old('required')) />
+                                <span class="text-sm text-slate-700">Yes</span>
+                            </div>
+                            @error('required')
+                            <p class="mt-1 text-sm text-rose-600">{{ $message }}</p>
+                            @enderror
+                        </div>
                     </div>
 
-                    <div class="flex items-center gap-2">
-                        <input id="required" name="required" type="checkbox" value="1"
-                               class="h-4 w-4 rounded border-slate-300 text-slate-900 focus:ring-slate-900"
-                               @checked(old('required')) />
-                        <label class="text-sm text-slate-700" for="required">Required</label>
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700" for="options_text">Options (for select/radio/checkbox)</label>
+                        <textarea id="options_text" name="options_text" rows="4"
+                                  class="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm shadow-sm focus:border-slate-900 focus:outline-none focus:ring-1 focus:ring-slate-900"
+                                  placeholder="One option per line">{{ old('options_text') }}</textarea>
+                        @error('options_text')
+                        <p class="mt-1 text-sm text-rose-600">{{ $message }}</p>
+                        @enderror
+                        <p class="mt-1 text-xs text-slate-500">Only used for choice-based question types.</p>
                     </div>
-                    @error('required')
-                    <p class="mt-1 text-sm text-rose-600">{{ $message }}</p>
-                    @enderror
 
                     <div>
                         <label class="block text-sm font-medium text-slate-700" for="sort_order">Sort order</label>

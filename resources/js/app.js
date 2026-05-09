@@ -1,5 +1,59 @@
 import './bootstrap';
 
+// Theme (light/dark)
+function applyTheme(theme) {
+    const root = document.documentElement;
+    const isDark = theme === 'dark';
+    root.classList.toggle('dark', isDark);
+    root.style.colorScheme = isDark ? 'dark' : 'light';
+}
+
+function getPreferredTheme() {
+    const stored = window.localStorage?.getItem?.('theme');
+    if (stored === 'light' || stored === 'dark') return stored;
+    return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+}
+
+function setTheme(theme) {
+    window.localStorage?.setItem?.('theme', theme);
+    applyTheme(theme);
+    document.querySelectorAll('[data-theme-icon]').forEach((el) => {
+        el.classList.toggle('hidden', el.getAttribute('data-theme-icon') !== theme);
+    });
+    document.querySelectorAll('[data-theme-toggle-label]').forEach((el) => {
+        el.textContent = theme === 'dark' ? 'Dark mode' : 'Light mode';
+    });
+}
+
+document.addEventListener('click', (event) => {
+    const btn = event.target?.closest?.('[data-theme-toggle]');
+    if (!btn) return;
+
+    const next = document.documentElement.classList.contains('dark') ? 'light' : 'dark';
+    setTheme(next);
+});
+
+document.addEventListener('DOMContentLoaded', () => {
+    // Ensure icons reflect whichever theme was applied pre-load.
+    const current = document.documentElement.classList.contains('dark') ? 'dark' : 'light';
+    applyTheme(current);
+    document.querySelectorAll('[data-theme-icon]').forEach((el) => {
+        el.classList.toggle('hidden', el.getAttribute('data-theme-icon') !== current);
+    });
+    document.querySelectorAll('[data-theme-toggle-label]').forEach((el) => {
+        el.textContent = current === 'dark' ? 'Dark mode' : 'Light mode';
+    });
+
+    // If no stored preference, follow system changes live.
+    try {
+        const stored = window.localStorage?.getItem?.('theme');
+        if (!stored && window.matchMedia) {
+            const mq = window.matchMedia('(prefers-color-scheme: dark)');
+            mq.addEventListener?.('change', (e) => setTheme(e.matches ? 'dark' : 'light'));
+        }
+    } catch (e) {}
+});
+
 // Basic UI enhancements (no framework):
 // - Disable submit buttons while submitting
 // - Standard confirmation dialogs via data-confirm
@@ -32,7 +86,10 @@ document.addEventListener('submit', (event) => {
     if (!(form instanceof HTMLFormElement)) return;
 
     // Confirmation dialog (opt-in).
-    const confirmMessage = form.getAttribute('data-confirm');
+    const submitter = event.submitter instanceof HTMLElement ? event.submitter : null;
+    const confirmMessage =
+        submitter?.getAttribute?.('data-confirm') ||
+        form.getAttribute('data-confirm');
     if (confirmMessage && !window.confirm(confirmMessage)) {
         event.preventDefault();
         return;
@@ -108,5 +165,27 @@ document.addEventListener('click', async (event) => {
     } catch (e) {
         window.prompt(`Copy ${label}:`, text);
     }
+});
+
+// Password visibility toggle (opt-in via data-toggle-password)
+document.addEventListener('click', (event) => {
+    const button = event.target?.closest?.('[data-toggle-password]');
+    if (!button) return;
+
+    const inputId = button.getAttribute('data-toggle-password');
+    if (!inputId) return;
+
+    const input = document.getElementById(inputId);
+    if (!(input instanceof HTMLInputElement)) return;
+
+    const isHidden = input.type === 'password';
+    input.type = isHidden ? 'text' : 'password';
+
+    button.setAttribute('aria-label', isHidden ? 'Hide password' : 'Show password');
+
+    const showIcon = button.querySelector('[data-password-icon="show"]');
+    const hideIcon = button.querySelector('[data-password-icon="hide"]');
+    showIcon?.classList.toggle('hidden', isHidden);
+    hideIcon?.classList.toggle('hidden', !isHidden);
 });
 

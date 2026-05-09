@@ -63,7 +63,23 @@
                 </x-ui.field>
 
                 <x-ui.field label="Password" name="password">
-                    <x-ui.input id="password" name="password" type="password" required />
+                    <div class="relative">
+                        <x-ui.input id="password" name="password" type="password" required class="pr-10" />
+                        <button
+                            type="button"
+                            class="absolute inset-y-0 right-0 inline-flex items-center justify-center px-3 text-slate-600 hover:text-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2 dark:text-slate-300 dark:hover:text-slate-100 dark:focus:ring-slate-600 dark:focus:ring-offset-slate-950"
+                            data-toggle-password="password"
+                            aria-label="Show password"
+                        >
+                            <svg data-password-icon="show" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                <path d="M10 4c-5 0-8.5 4.5-8.5 6s3.5 6 8.5 6 8.5-4.5 8.5-6-3.5-6-8.5-6Zm0 10a4 4 0 1 1 0-8 4 4 0 0 1 0 8Z" />
+                                <path d="M10 7a3 3 0 1 0 0 6 3 3 0 0 0 0-6Z" />
+                            </svg>
+                            <svg data-password-icon="hide" xmlns="http://www.w3.org/2000/svg" class="hidden h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                <path d="M3.53 2.47a.75.75 0 0 0-1.06 1.06l1.57 1.57C2.5 6.2 1.5 8.02 1.5 10c0 1.5 3.5 6 8.5 6 1.57 0 3.02-.45 4.28-1.16l1.69 1.69a.75.75 0 1 0 1.06-1.06l-14.5-14.5Zm6.47 12.03a4 4 0 0 1-4-4c0-.52.1-1.02.29-1.47l1.2 1.2a3 3 0 0 0 3.98 3.98l1.2 1.2c-.45.19-.95.29-1.47.29Zm6.47-1.97-2.03-2.03A4 4 0 0 0 6.5 6.56L4.69 4.75C6.2 3.66 8.02 3 10 3c5 0 8.5 4.5 8.5 6 0 1.21-2.27 4.25-5.03 5.53Z" />
+                            </svg>
+                        </button>
+                    </div>
                 </x-ui.field>
 
                 <div class="pt-2">

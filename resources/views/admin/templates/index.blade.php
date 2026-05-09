@@ -19,7 +19,7 @@
                                 {{ $t->name }}
                             </a>
                             <p class="mt-1 text-sm text-slate-600">
-                                Status: {{ $t->status->value }} · Questions: {{ $t->questions_count }}
+                                <x-ui.status-badge :status="$t->status" /> · Questions: {{ $t->questions_count }}
                             </p>
                             <p class="mt-1 text-xs text-slate-500">
                                 Updated: {{ $t->updated_at?->toDateTimeString() }}
@@ -54,7 +54,7 @@
                         <td class="px-4 py-3 text-sm font-medium text-slate-900">
                             <a class="hover:underline" href="{{ route('admin.templates.show', $t) }}">{{ $t->name }}</a>
                         </td>
-                        <td class="px-4 py-3 text-sm text-slate-600">{{ $t->status->value }}</td>
+                        <td class="px-4 py-3 text-sm text-slate-600"><x-ui.status-badge :status="$t->status" /></td>
                         <td class="px-4 py-3 text-sm text-slate-600">{{ $t->questions_count }}</td>
                         <td class="px-4 py-3 text-sm text-slate-600">{{ $t->updated_at?->toDateTimeString() }}</td>
                         <td class="px-4 py-3 text-sm">

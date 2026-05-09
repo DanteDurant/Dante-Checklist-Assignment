@@ -23,6 +23,9 @@ class StoreChecklistQuestionRequest extends FormRequest
             'answer_type' => ['required', new Enum(ChecklistQuestionType::class)],
             'required' => ['sometimes', 'boolean'],
             'sort_order' => ['sometimes', 'integer', 'min:0', 'max:1000000'],
+            'options' => ['sometimes', 'nullable', 'array', 'max:200'],
+            'options.*.value' => ['required_with:options', 'string', 'max:255'],
+            'options.*.label' => ['required_with:options', 'string', 'max:255'],
         ];
     }
 }
