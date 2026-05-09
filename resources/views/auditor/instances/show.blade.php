@@ -25,9 +25,11 @@
                             $existing = $answers->get($q->id);
                             $stored = $existing?->value ?? [];
 
-                            $textValue = old("answers.$q->id", $stored['text'] ?? '');
-                            $numberValue = old("answers.$q->id", $stored['number'] ?? '');
-                            $boolValue = old("answers.$q->id", $stored['boolean'] ?? false);
+                            $answerKey = "answers.{$q->id}";
+
+                            $textValue = old($answerKey, $stored['text'] ?? '');
+                            $numberValue = old($answerKey, $stored['number'] ?? '');
+                            $boolValue = old($answerKey, $stored['boolean'] ?? false);
                         @endphp
 
                         <div class="rounded-lg border border-slate-200 bg-white p-4">
@@ -50,9 +52,9 @@
 
                             <div class="mt-3">
                                 @if ($q->type->value === 'text')
-                                    <x-ui.input name="answers[{{ $q->id }}]" type="text" value="{{ $textValue }}" @disabled(!$isEditable) />
+                                    <x-ui.input name="answers[{{ $q->id }}]" type="text" value="{{ $textValue }}" :disabled="!$isEditable" />
                                 @elseif ($q->type->value === 'number')
-                                    <x-ui.input name="answers[{{ $q->id }}]" type="number" step="any" value="{{ $numberValue }}" @disabled(!$isEditable) />
+                                    <x-ui.input name="answers[{{ $q->id }}]" type="number" step="any" value="{{ $numberValue }}" :disabled="!$isEditable" />
                                 @elseif ($q->type->value === 'boolean')
                                     <div class="flex items-center gap-2">
                                         <input type="hidden" name="answers[{{ $q->id }}]" value="0" />
@@ -63,13 +65,13 @@
                                         <label for="q_{{ $q->id }}" class="text-sm text-slate-700">Yes</label>
                                     </div>
                                 @else
-                                    <x-ui.textarea name="answers[{{ $q->id }}]" rows="3" @disabled(!$isEditable)>{{ old("answers.$q->id", json_encode($stored)) }}</x-ui.textarea>
+                                    <x-ui.textarea name="answers[{{ $q->id }}]" rows="3" :disabled="!$isEditable">{{ old($answerKey, json_encode($stored)) }}</x-ui.textarea>
                                     <p class="mt-1 text-xs text-slate-500">
                                         This answer type is not fully implemented in Blade yet.
                                     </p>
                                 @endif
 
-                                @error("answers.$q->id")
+                                @error($answerKey)
                                 <p class="mt-2 text-sm text-rose-600">{{ $message }}</p>
                                 @enderror
                             </div>
