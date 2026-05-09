@@ -65,9 +65,18 @@ Seeded users (from `database/seeders/RolesAndUsersSeeder.php`):
 
 ## API authentication (Sanctum)
 
-### Login
+### Two API surfaces
 
-`POST /api/v1/auth/login`
+This project exposes:
+
+- **Stable external API** (recommended for evaluation): **`/api/*`**
+- Internal versioned API (legacy/dev): `/api/v1/*`
+
+The remainder of this section focuses on the **stable `/api/*`** endpoints.
+
+### Login (get a Bearer token)
+
+`POST /api/login`
 
 Body:
 
@@ -83,6 +92,8 @@ Response:
 
 ```json
 {
+  "success": true,
+  "message": "Logged in",
   "data": {
     "token": "<plain-text-token>",
     "token_type": "Bearer",
@@ -103,9 +114,13 @@ Send the token on subsequent requests:
 Authorization: Bearer <plain-text-token>
 ```
 
-### Logout
+### Me (verify token)
 
-`POST /api/v1/auth/logout` (requires `auth:sanctum`)
+`GET /api/me` (requires `auth:sanctum`)
+
+### Logout (revoke tokens)
+
+`POST /api/logout` (requires `auth:sanctum`)
 
 ## Running the application
 
@@ -149,7 +164,36 @@ High-level layering (clean architecture style):
 
 ## API documentation summary
 
-All endpoints are prefixed with `/api/v1`.
+Evaluator docs:
+
+- API guide: `docs/api.md`
+- Postman collection: `postman/Compliance-Management-System.postman_collection.json`
+
+### Stable external API (`/api/*`)
+
+Auth:
+
+- `POST /api/login`
+- `POST /api/logout` (auth)
+- `GET /api/me` (auth)
+
+Admin (requires `auth:sanctum` + `role:admin`):
+
+- Templates: `GET/POST /api/templates`, `GET/PUT/DELETE /api/templates/{template}`
+- Questions: `POST /api/templates/{template}/questions`, `PUT/DELETE /api/questions/{question}`
+- Reports: `GET /api/reports`
+
+Auditor (requires `auth:sanctum` + `role:auditor`):
+
+- `GET /api/checklists`
+- `POST /api/checklists/start/{template}`
+- `GET /api/checklists/{checklist}`
+- `PUT /api/checklists/{checklist}/save-draft`
+- `PUT /api/checklists/{checklist}/complete`
+
+---
+
+### Internal API (`/api/v1/*`)
 
 ### Auth
 
