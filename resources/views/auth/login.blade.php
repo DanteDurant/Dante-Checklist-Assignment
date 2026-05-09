@@ -15,14 +15,13 @@
                                     Password: <span class="font-mono">password</span>
                                 </div>
                             </div>
-                            <div class="grid grid-cols-2 gap-2 sm:grid-cols-1 sm:justify-items-end">
-                                <button type="button" class="w-full rounded-md bg-white px-3 py-2 text-sm font-semibold text-slate-900 ring-1 ring-inset ring-slate-300 hover:bg-slate-50 sm:w-auto"
-                                        data-copy="admin@example.com" data-copy-label="Admin email">
-                                    Copy email
-                                </button>
-                                <button type="button" class="w-full rounded-md bg-white px-3 py-2 text-sm font-semibold text-slate-900 ring-1 ring-inset ring-slate-300 hover:bg-slate-50 sm:w-auto"
-                                        data-copy="password" data-copy-label="Admin password">
-                                    Copy password
+                            <div class="sm:justify-items-end">
+                                <button type="button"
+                                        class="w-full rounded-md bg-white px-3 py-2 text-sm font-semibold text-slate-900 ring-1 ring-inset ring-slate-300 hover:bg-slate-50 sm:w-auto"
+                                        data-fill-credentials
+                                        data-fill-email="admin@example.com"
+                                        data-fill-password="password">
+                                    Autofill
                                 </button>
                             </div>
                         </div>
@@ -39,20 +38,19 @@
                                     Password: <span class="font-mono">password</span>
                                 </div>
                             </div>
-                            <div class="grid grid-cols-2 gap-2 sm:grid-cols-1 sm:justify-items-end">
-                                <button type="button" class="w-full rounded-md bg-white px-3 py-2 text-sm font-semibold text-slate-900 ring-1 ring-inset ring-slate-300 hover:bg-slate-50 sm:w-auto"
-                                        data-copy="auditor@example.com" data-copy-label="Auditor email">
-                                    Copy email
-                                </button>
-                                <button type="button" class="w-full rounded-md bg-white px-3 py-2 text-sm font-semibold text-slate-900 ring-1 ring-inset ring-slate-300 hover:bg-slate-50 sm:w-auto"
-                                        data-copy="password" data-copy-label="Auditor password">
-                                    Copy password
+                            <div class="sm:justify-items-end">
+                                <button type="button"
+                                        class="w-full rounded-md bg-white px-3 py-2 text-sm font-semibold text-slate-900 ring-1 ring-inset ring-slate-300 hover:bg-slate-50 sm:w-auto"
+                                        data-fill-credentials
+                                        data-fill-email="auditor@example.com"
+                                        data-fill-password="password">
+                                    Autofill
                                 </button>
                             </div>
                         </div>
                     </div>
                 </div>
-                <p class="mt-2 text-xs text-slate-500">Copy uses your browser clipboard permissions.</p>
+                <p class="mt-2 text-xs text-slate-500">Autofill will populate the form below.</p>
             </div>
 
             <form method="POST" action="{{ route('login.store') }}" class="space-y-4">

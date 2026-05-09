@@ -189,3 +189,28 @@ document.addEventListener('click', (event) => {
     hideIcon?.classList.toggle('hidden', !isHidden);
 });
 
+// Credential autofill (login page)
+document.addEventListener('click', (event) => {
+    const btn = event.target?.closest?.('[data-fill-credentials]');
+    if (!btn) return;
+
+    const email = btn.getAttribute('data-fill-email') || '';
+    const password = btn.getAttribute('data-fill-password') || '';
+
+    const emailInput = document.getElementById('email');
+    const passwordInput = document.getElementById('password');
+
+    if (emailInput instanceof HTMLInputElement) {
+        emailInput.value = email;
+        emailInput.dispatchEvent(new Event('input', { bubbles: true }));
+        emailInput.dispatchEvent(new Event('change', { bubbles: true }));
+    }
+
+    if (passwordInput instanceof HTMLInputElement) {
+        passwordInput.value = password;
+        passwordInput.dispatchEvent(new Event('input', { bubbles: true }));
+        passwordInput.dispatchEvent(new Event('change', { bubbles: true }));
+        passwordInput.focus();
+    }
+});
+
