@@ -10,20 +10,11 @@ use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Laravel\Sanctum\Sanctum;
-use Spatie\Permission\Models\Role;
 use Tests\TestCase;
 
 class ReportingFiltersFeatureTest extends TestCase
 {
     use RefreshDatabase;
-
-    protected function setUp(): void
-    {
-        parent::setUp();
-
-        Role::firstOrCreate(['name' => 'admin']);
-        Role::firstOrCreate(['name' => 'auditor']);
-    }
 
     public function test_reporting_filters_only_return_completed_instances(): void
     {
@@ -67,4 +58,3 @@ class ReportingFiltersFeatureTest extends TestCase
         $this->assertEquals([$i1->id], $ids);
     }
 }
-

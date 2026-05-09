@@ -8,20 +8,11 @@ use App\Models\ChecklistTemplate;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Laravel\Sanctum\Sanctum;
-use Spatie\Permission\Models\Role;
 use Tests\TestCase;
 
 class ChecklistTemplateCrudFeatureTest extends TestCase
 {
     use RefreshDatabase;
-
-    protected function setUp(): void
-    {
-        parent::setUp();
-
-        Role::firstOrCreate(['name' => 'admin']);
-        Role::firstOrCreate(['name' => 'auditor']);
-    }
 
     public function test_admin_can_create_update_show_and_delete_template(): void
     {
@@ -95,4 +86,3 @@ class ChecklistTemplateCrudFeatureTest extends TestCase
             ->assertNoContent();
     }
 }
-

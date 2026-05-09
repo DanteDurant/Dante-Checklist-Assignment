@@ -5,20 +5,11 @@ namespace Tests\Feature;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Laravel\Sanctum\Sanctum;
-use Spatie\Permission\Models\Role;
 use Tests\TestCase;
 
 class RolePermissionsFeatureTest extends TestCase
 {
     use RefreshDatabase;
-
-    protected function setUp(): void
-    {
-        parent::setUp();
-
-        Role::firstOrCreate(['name' => 'admin']);
-        Role::firstOrCreate(['name' => 'auditor']);
-    }
 
     public function test_admin_can_access_admin_routes_and_not_auditor_routes(): void
     {
@@ -42,4 +33,3 @@ class RolePermissionsFeatureTest extends TestCase
         $this->getJson('/api/v1/admin/ping')->assertForbidden();
     }
 }
-

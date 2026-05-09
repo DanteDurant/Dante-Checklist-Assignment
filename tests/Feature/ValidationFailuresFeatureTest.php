@@ -2,26 +2,16 @@
 
 namespace Tests\Feature;
 
-use App\Enums\ChecklistQuestionType;
 use App\Enums\ChecklistTemplateStatus;
 use App\Models\ChecklistTemplate;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Laravel\Sanctum\Sanctum;
-use Spatie\Permission\Models\Role;
 use Tests\TestCase;
 
 class ValidationFailuresFeatureTest extends TestCase
 {
     use RefreshDatabase;
-
-    protected function setUp(): void
-    {
-        parent::setUp();
-
-        Role::firstOrCreate(['name' => 'admin']);
-        Role::firstOrCreate(['name' => 'auditor']);
-    }
 
     public function test_template_create_validation_fails(): void
     {
@@ -52,4 +42,3 @@ class ValidationFailuresFeatureTest extends TestCase
             ->assertJsonValidationErrors(['question_text', 'answer_type', 'sort_order']);
     }
 }
-

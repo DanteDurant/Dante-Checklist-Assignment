@@ -5,26 +5,16 @@ namespace Tests\Feature;
 use App\Enums\ChecklistInstanceStatus;
 use App\Enums\ChecklistQuestionType;
 use App\Enums\ChecklistTemplateStatus;
-use App\Models\ChecklistInstance;
 use App\Models\ChecklistQuestion;
 use App\Models\ChecklistTemplate;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Laravel\Sanctum\Sanctum;
-use Spatie\Permission\Models\Role;
 use Tests\TestCase;
 
 class ChecklistCompletionFeatureTest extends TestCase
 {
     use RefreshDatabase;
-
-    protected function setUp(): void
-    {
-        parent::setUp();
-
-        Role::firstOrCreate(['name' => 'admin']);
-        Role::firstOrCreate(['name' => 'auditor']);
-    }
 
     public function test_auditor_can_start_save_progress_and_complete_checklist(): void
     {
@@ -121,4 +111,3 @@ class ChecklistCompletionFeatureTest extends TestCase
         ])->assertStatus(422);
     }
 }
-

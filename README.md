@@ -130,10 +130,18 @@ php artisan serve
 
 ## Running tests
 
-This project uses **PHPUnit** (already configured).
+This project uses **PHPUnit** (see `phpunit.xml`). Full testing layout, filters, and coverage notes: **`docs/testing.md`**.
 
 ```bash
+# Full suite
 php artisan test
+
+# Examples: feature-only, name filter
+php artisan test tests/Feature
+php artisan test --filter=PublicApi
+
+# Reset demo DB (optional; tests auto-migrate via RefreshDatabase)
+php artisan migrate:fresh --seed
 ```
 
 ## Project architecture overview
@@ -167,6 +175,7 @@ High-level layering (clean architecture style):
 Evaluator docs:
 
 - API guide: `docs/api.md` (includes **PDF Export System (Synchronous & Asynchronous)**, Postman steps, status lifecycle, troubleshooting)
+- Testing guide: `docs/testing.md` (suite structure, commands, coverage map)
 - Postman collection: `postman/Compliance-Management-System.postman_collection.json` (folder **Exports (PDF System)**)
 
 ### PDF exports and queue workers

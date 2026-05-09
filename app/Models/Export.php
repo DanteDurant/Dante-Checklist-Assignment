@@ -4,12 +4,17 @@ namespace App\Models;
 
 use App\Enums\ExportStatus;
 use App\Enums\ExportType;
+use Database\Factories\ExportFactory;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Str;
 
 class Export extends Model
 {
+    /** @use HasFactory<ExportFactory> */
+    use HasFactory;
+
     protected $fillable = [
         'uuid',
         'user_id',

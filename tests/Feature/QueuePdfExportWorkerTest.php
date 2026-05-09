@@ -12,7 +12,6 @@ use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
-use Spatie\Permission\Models\Role;
 use Tests\TestCase;
 
 /**
@@ -26,8 +25,6 @@ final class QueuePdfExportWorkerTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-
-        Role::firstOrCreate(['name' => 'admin']);
 
         Config::set('queue.default', 'database');
         Storage::fake('exports');

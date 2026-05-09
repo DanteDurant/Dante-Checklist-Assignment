@@ -4,7 +4,6 @@ namespace Tests\Feature;
 
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Spatie\Permission\Models\Role;
 use Tests\TestCase;
 
 class AuthFeatureTest extends TestCase
@@ -13,8 +12,6 @@ class AuthFeatureTest extends TestCase
 
     public function test_login_returns_token_and_user_payload(): void
     {
-        Role::create(['name' => 'admin']);
-
         $user = User::factory()->create([
             'email' => 'admin@example.com',
             'password' => 'password', // hashed via User cast
@@ -40,8 +37,6 @@ class AuthFeatureTest extends TestCase
 
     public function test_logout_revokes_current_token(): void
     {
-        Role::create(['name' => 'admin']);
-
         $user = User::factory()->create(['password' => 'password']);
         $user->assignRole('admin');
 
@@ -65,4 +60,3 @@ class AuthFeatureTest extends TestCase
         ]);
     }
 }
-
