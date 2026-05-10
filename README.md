@@ -5,7 +5,106 @@ Laravel 11 REST API for managing compliance checklist templates (admin) and comp
 - **Authentication**: Laravel Sanctum (token-based)
 - **Authorization**: Spatie Laravel Permission (roles + middleware) + Laravel Policies
 
-## Setup instructions
+## Docker Compose (recommended for evaluators)
+
+Fully containerized stack: **PHP 8.3-FPM**, **Nginx**, **MySQL 8**, **queue worker** (required for async PDF exports), optional **Vite** dev profile.
+
+### Prerequisites
+
+- [Docker Desktop](https://www.docker.com/products/docker-desktop/) (or Docker Engine + Compose v2)
+
+### Architecture
+
+| Service | Image / build | Role |
+|--------|----------------|------|
+| **nginx** | `nginx:1.27-alpine` | HTTP on host port **8080** → Laravel `public/` |
+| **app** | `docker/php/Dockerfile` | PHP-FPM + Composer + Node 20 (npm in same image) |
+| **mysql** | `mysql:8.0` | Database + persistent volume `mysql-data` |
+| **queue** | same as **app** | `php artisan queue:work database` (PDF export jobs) |
+| **vite** (optional profile) | `node:20-bookworm-slim` | `npm run dev` with HMR on port **5173** |
+
+Config files live under **`docker/nginx/`** and **`docker/php/`**.
+
+### First-time setup (exact commands)
+
+From the **`checklist-assignment/`** directory (repository root that contains `artisan`):
+
+```bash
+# 0) Environment — use Docker template (recommended) so DB host / Sanctum / APP_URL match Compose
+cp docker/env.docker.example .env
+
+# 1) Infrastructure (needs .env present for env_file mounts on app / queue — use .env.example as stub if copying later)
+docker compose up -d --build
+
+# 2) App key & dependencies
+docker compose exec app php artisan key:generate
+docker compose exec app composer install
+
+# 3) Database
+docker compose exec app php artisan migrate --seed
+
+# 4) Frontend (production asset build — served by Vite-manifest from public/build)
+docker compose exec app npm install
+docker compose exec app npm run build
+```
+
+If you prefer to start Compose before editing secrets, copy **`.env.example`** to **`.env`** first (`touch .env` is enough so Compose starts), then set **`DB_HOST=mysql`**, **`DB_DATABASE=laravel`**, **`DB_USERNAME=laravel`**, **`DB_PASSWORD=laravel_secret`**, **`APP_URL=http://localhost:8080`**, and **`SANCTUM_STATEFUL_DOMAINS`** as in **`docker/env.docker.example`** before running **`migrate`**.
+
+Open **http://localhost:8080**. Seeded logins: **`admin@example.com` / `password`**, **`auditor@example.com` / `password`**.
+
+**API base URL** with this stack: **`http://localhost:8080/api/...`**.
+
+### Environment variables (Docker)
+
+- Copy **`docker/env.docker.example`** → **`.env`** (or merge DB / `APP_URL` / `SANCTUM_STATEFUL_DOMAINS` into `.env`).
+- MySQL in Compose uses database **`laravel`**, user **`laravel`**, password **`laravel_secret`** (matches the example file). Change both **`.env`** and **`docker-compose.yml`** if you customize credentials.
+- Ports: **`DOCKER_WEB_PORT`** (default `8080`), **`DOCKER_MYSQL_PORT`** (default **`3307`** — avoids clashes with a host MySQL on 3306), **`DOCKER_VITE_PORT`** (default `5173`). Inside Compose, Laravel still uses **`DB_HOST=mysql`** and **`DB_PORT=3306`** (container port).
+
+### Queue worker (PDF exports)
+
+The **`queue`** service runs continuously. Async PDF jobs use **`QUEUE_CONNECTION=database`**; the `jobs` table is created by Laravel migrations.
+
+Verify the worker:
+
+```bash
+docker compose logs -f queue
+```
+
+### Optional: Vite dev server (hot reload)
+
+Production evaluators can rely on **`npm run build`** only. For HMR:
+
+```bash
+docker compose --profile vite up -d
+```
+
+The Vite container sets **`DOCKER_VITE=1`** so `vite.config.js` listens on `0.0.0.0` and uses polling for bind mounts. Use **`APP_URL=http://localhost:8080`** and include **`localhost:5173`** in **`SANCTUM_STATEFUL_DOMAINS`** (see `docker/env.docker.example`).
+
+### Useful commands
+
+```bash
+docker compose ps
+docker compose exec app php artisan tinker
+docker compose exec app php artisan queue:failed
+docker compose down               # stop; add -v to drop MySQL volume
+```
+
+### Troubleshooting
+
+| Symptom | What to try |
+|--------|-------------|
+| **Port 8080 / 3307 / 5173 in use** | `export DOCKER_WEB_PORT=18080 DOCKER_MYSQL_PORT=13306 DOCKER_VITE_PORT=25173` then `docker compose up -d`. To expose MySQL on host **3306** instead of **3307**: `DOCKER_MYSQL_PORT=3306` (requires nothing else listening on 3306). |
+| **`Connection refused` to MySQL** | Wait for healthcheck (`docker compose ps`); ensure `.env` has `DB_HOST=mysql` |
+| **403 / CSRF / login issues** | Set **`APP_URL`** to the URL you use (**`http://localhost:8080`**) and widen **`SANCTUM_STATEFUL_DOMAINS`** |
+| **Permission errors on `storage/`** | `docker compose exec app chown -R www-data:www-data storage bootstrap/cache` |
+| **Blank page / no CSS** | Run **`npm run build`** inside **`app`**, or enable **`vite`** profile |
+| **Queued PDFs never finish** | Check **`queue`** logs; ensure migrations ran (`jobs` table). Run `docker compose restart queue` |
+| **Missing `vendor` / `node_modules`** | `docker compose exec app composer install` and `npm install` |
+| **Stale config** | `docker compose exec app php artisan config:clear` |
+
+---
+
+## Setup instructions (native PHP — without Docker)
 
 ### Requirements
 

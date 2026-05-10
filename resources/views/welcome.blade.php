@@ -11,6 +11,6 @@
                 </div>
             @endguest
         </x-ui.card>
-    </div>
+            </div>
 </x-layouts.base>
 
