@@ -143,7 +143,7 @@
         </div>
 
         <div>
-            <x-ui.card title="Add question" description="Simple form-based creation (no JS framework).">
+            <x-ui.card title="Add question">
                 <form method="POST" action="{{ route('admin.templates.questions.store', $template) }}" class="space-y-4"
                       data-question-duplicate-check
                       data-existing-normalized="{{ e(json_encode($existing_question_signatures ?? [])) }}">

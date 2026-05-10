@@ -39,7 +39,6 @@ class ChecklistTemplateSeeder extends Seeder
                 ));
             }
 
-            // Include trashed rows so firstOrNew matches seeded names after soft-delete archives (Docker/local parity).
             $template = ChecklistTemplate::withTrashed()->firstOrNew(['name' => $def['name']]);
 
             if ($template->trashed()) {

@@ -13,7 +13,7 @@ return [
     */
 
     /** Completed checklist report: sync when matched rows are at or below this count */
-    'sync_max_report_rows' => (int) env('PDF_EXPORT_SYNC_MAX_REPORT_ROWS', 75),
+    'sync_max_report_rows' => (int) env('PDF_EXPORT_SYNC_MAX_REPORT_ROWS', 200),
 
     /** Detailed reports queue sooner than standard */
     'detailed_report_row_floor' => (int) env('PDF_EXPORT_DETAILED_REPORT_ROW_FLOOR', 35),

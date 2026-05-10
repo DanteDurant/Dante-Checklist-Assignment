@@ -7,10 +7,10 @@
                 </p>
             @else
                 <p class="text-sm leading-relaxed text-ui-fg-muted">
-                    Please sign in to access the admin or auditor dashboards.
+                    Sign in to open the admin or auditor area.
                 </p>
                 <div class="mt-4">
-                    <x-ui.button :href="route('login')">Go to login</x-ui.button>
+                    <x-ui.button :href="route('login')">Sign in</x-ui.button>
                 </div>
             @endauth
         </x-ui.card>

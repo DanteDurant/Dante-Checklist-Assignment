@@ -1,6 +1,6 @@
-# Testing guide (Laravel 11 / PHPUnit)
+# Testing
 
-This document describes how automated tests are organized for the Compliance Checklist application, how to run them, and what is covered.
+How the PHPUnit suite is laid out and how to run it.
 
 ---
 
@@ -38,7 +38,7 @@ Fresh database with demo seed data (manual / local reset — **not** required fo
 php artisan migrate:fresh --seed
 ```
 
-PHPUnit uses `RefreshDatabase` per test class and `QUEUE_CONNECTION=sync` by default (see `phpunit.xml`). Tests that need the real database queue override `queue.default` locally (see `QueuePdfExportWorkerTest`).
+PHPUnit uses `RefreshDatabase` per test class and `QUEUE_CONNECTION=sync` by default (see `phpunit.xml`). **`phpunit.xml` sets SQLite `:memory:`** so tests run without MySQL or a matching `DB_HOST` in `.env`. Tests that need the real database queue override `queue.default` locally (see `QueuePdfExportWorkerTest`).
 
 ---
 

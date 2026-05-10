@@ -376,8 +376,9 @@ final class ExportPdfCoordinator
                         'exports.download',
                         now()->addHour(),
                         ['export' => $export->uuid],
+                        false,
                     ),
-                    'status_url' => route('exports.status', $export),
+                    'status_url' => route('exports.status', $export, false),
                 ],
             ]);
         }
@@ -397,7 +398,7 @@ final class ExportPdfCoordinator
                 'async' => true,
                 'export_uuid' => $export->uuid,
                 'status' => $export->status->value,
-                'status_url' => route('exports.status', $export),
+                'status_url' => route('exports.status', $export, false),
             ],
         ], 202);
     }

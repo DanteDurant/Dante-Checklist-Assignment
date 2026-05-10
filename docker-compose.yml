@@ -1,9 +1,5 @@
-# Laravel 11 — Compliance checklist (evaluator Docker stack)
-# Usage: docker compose up -d --build
-#
-# Profiles:
-#   (default)  nginx + php-fpm (app) + mysql + queue worker
-#   vite       Vite dev server (HMR) — docker compose --profile vite up -d
+# Compliance checklist — PHP-FPM, Nginx, MySQL, queue worker. Optional: --profile vite
+# docker compose up -d --build
 
 services:
   mysql:

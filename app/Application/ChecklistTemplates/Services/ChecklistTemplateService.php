@@ -82,10 +82,7 @@ class ChecklistTemplateService
         });
     }
 
-    /**
-     * Soft-delete the template: preserves checklist_instances (audit history) and FK integrity.
-     * Related questions remain for referential consistency; the template is hidden from active UI/API lists.
-     */
+    /** Soft-delete: instances stay linked for audit; template drops off normal listings. */
     public function delete(ChecklistTemplate $template): void
     {
         $template->delete();

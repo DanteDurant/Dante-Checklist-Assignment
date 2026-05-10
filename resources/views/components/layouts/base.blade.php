@@ -31,7 +31,7 @@
         <x-ui.flash type="error" :message="session('error')" />
 
         @if ($errors->any())
-            <x-ui.flash type="error" :message="$errors->first() ?: 'Please review the highlighted fields and try again.'" />
+            <x-ui.flash type="error" :message="$errors->first() ?: 'Check the highlighted fields and try again.'" />
         @endif
 
         {{ $slot }}

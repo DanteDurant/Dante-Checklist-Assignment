@@ -33,7 +33,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $exceptions->render(function (Throwable $e, $request) {
             if (! $request->is('api/*')) {
                 if ($e instanceof TokenMismatchException) {
-                    return redirect()->back()->with('error', 'This page expired. Refresh the page and try again.');
+                    return redirect()->back()->with('error', 'This page expired—refresh and try again.');
                 }
 
                 if ($e instanceof QueryException) {
@@ -47,7 +47,7 @@ return Application::configure(basePath: dirname(__DIR__))
 
                         return redirect()->back()->withInput()->with(
                             'error',
-                            'That change conflicts with existing data. Please adjust your entries and try again.'
+                            'That conflicts with existing data. Adjust your input and try again.'
                         );
                     }
                 }
@@ -74,7 +74,7 @@ return Application::configure(basePath: dirname(__DIR__))
             if ($e instanceof AuthorizationException) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'You do not have permission to perform this action.',
+                    'message' => 'Forbidden.',
                     'errors' => [],
                 ], 403);
             }
@@ -82,7 +82,7 @@ return Application::configure(basePath: dirname(__DIR__))
             if ($e instanceof ModelNotFoundException) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'The requested resource was not found.',
+                    'message' => 'Not found.',
                     'errors' => [],
                 ], 404);
             }
@@ -98,7 +98,7 @@ return Application::configure(basePath: dirname(__DIR__))
                     409 => 'Conflict.',
                     422 => 'Validation failed.',
                     429 => 'Too many requests.',
-                    default => $status >= 500 ? 'Something went wrong. Please try again later.' : 'Request could not be completed.',
+                    default => $status >= 500 ? 'Server error.' : 'Request failed.',
                 };
 
                 return response()->json([
@@ -112,7 +112,7 @@ return Application::configure(basePath: dirname(__DIR__))
 
             return response()->json([
                 'success' => false,
-                'message' => 'Something went wrong. Please try again later.',
+                'message' => 'Server error.',
                 'errors' => [],
             ], 500);
         });

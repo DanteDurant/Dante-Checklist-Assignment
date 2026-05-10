@@ -57,7 +57,7 @@ final class PublicApiTemplatesFeatureTest extends TestCase
 
         $this->deleteJson("/api/templates/{$id}")
             ->assertOk()
-            ->assertJsonPath('message', 'Template archived successfully.');
+            ->assertJsonPath('message', 'Template archived.');
 
         $this->assertSoftDeleted('checklist_templates', ['id' => $id]);
     }

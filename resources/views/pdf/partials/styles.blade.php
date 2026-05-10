@@ -140,6 +140,42 @@
         color: #0f172a;
     }
 
+    /*
+     | Status in meta-grid: floated dt + inline-block span is unreliable in DomPDF (tall box, text at bottom).
+     | Single-cell inline-table matches DETAIL badge / table rendering and keeps the chip short.
+     */
+    dl.meta-grid dd.meta-dd-chip {
+        line-height: 1;
+    }
+
+    table.pdf-meta-chip {
+        display: inline-table;
+        border-collapse: collapse;
+        margin: 0;
+        padding: 0;
+        vertical-align: middle;
+    }
+
+    table.pdf-meta-chip td {
+        padding: 2px 9px;
+        font-size: 10px;
+        font-weight: 700;
+        line-height: 1.2;
+        white-space: nowrap;
+        text-align: center;
+        vertical-align: middle;
+        background: #e0f2fe;
+        border: 1px solid #7dd3fc;
+        color: #0f172a;
+        border-radius: 6px;
+    }
+
+    table.pdf-meta-chip-muted td {
+        background: #f1f5f9;
+        border-color: #cbd5e1;
+        color: #334155;
+    }
+
     .muted { color: #64748b; }
 
     table.data-table {
@@ -166,9 +202,14 @@
         vertical-align: top;
     }
 
-    /* Status column + pills: center in row (DomPDF-safe; avoid flex) */
-    table.data-table td.cell-status {
+    /*
+     | Status column: nowrap keeps badges one line; width:1% lets the column shrink-wrap in DomPDF tables.
+     */
+    table.data-table td.cell-status,
+    table.data-table th.cell-status {
         vertical-align: middle;
+        white-space: nowrap;
+        width: 1%;
     }
 
     tr { page-break-inside: avoid; }
@@ -184,11 +225,17 @@
     .q-label { font-weight: 700; color: #0f172a; font-size: 11px; }
 
     .badge {
+        display: inline-block;
+        vertical-align: middle;
         font-size: 9px;
-        padding: 2px 6px;
+        line-height: 1.15;
+        padding: 2px 7px;
         border: 1px solid #cbd5e1;
-        border-radius: 999px;
+        border-radius: 6px;
         color: #334155;
+        white-space: nowrap;
+        word-break: normal;
+        overflow-wrap: normal;
     }
 
     .required-mark { color: #b45309; font-weight: 700; }
@@ -213,15 +260,20 @@
     .pdf-doc-badge {
         margin-top: 8px;
         display: inline-block;
+        vertical-align: middle;
         font-size: 9px;
+        line-height: 1.15;
         font-weight: 700;
         letter-spacing: 0.06em;
         text-transform: uppercase;
         padding: 4px 10px;
-        border-radius: 999px;
+        border-radius: 6px;
         background: #f1f5f9;
         border: 1px solid #cbd5e1;
         color: #334155;
+        white-space: nowrap;
+        word-break: normal;
+        overflow-wrap: normal;
     }
 
     .pdf-confidential {
@@ -262,17 +314,28 @@
         color: #334155;
     }
 
+    /*
+     | Status pills: reset body word-break/overflow-wrap — DomPDF stretches inline-blocks oddly otherwise.
+     | Avoid border-radius:999px (DomPDF draws a vertical stadium when line-box height is wrong).
+     | Single line; line-height:1 keeps text vertically centered inside the pill box.
+     */
     .status-pill {
         display: inline-block;
         vertical-align: middle;
-        padding: 5px 12px;
-        line-height: 1.35;
-        border-radius: 999px;
+        box-sizing: border-box;
+        max-width: 100%;
+        padding: 3px 10px;
+        line-height: 1;
+        border-radius: 8px;
         background: #e0f2fe;
         border: 1px solid #7dd3fc;
         font-weight: 700;
         font-size: 10px;
         text-align: center;
+        white-space: nowrap;
+        word-break: normal;
+        overflow-wrap: normal;
+        word-wrap: normal;
     }
 
     /* Template lifecycle / neutral emphasis (published, draft, …) */

@@ -33,7 +33,7 @@ document.addEventListener('click', (event) => {
     setTheme(next);
 });
 
-/** Lightweight toast (enterprise SaaS-style feedback; supports dark mode classes). */
+/** Fixed-position toast; auto-dismiss after a few seconds. */
 function showToast(message, type = 'info') {
     const root = document.getElementById('ui-toast-root');
     if (!root || !message) return;
@@ -125,13 +125,8 @@ document.addEventListener('DOMContentLoaded', () => {
     } catch (e) {}
 });
 
-// Basic UI enhancements (no framework):
-// - Disable submit buttons while submitting (full page navigations only)
-// - Standard confirmation dialogs via data-confirm
-// - Prevent double submits
-//
-// IMPORTANT: GET forms that return Content-Disposition file downloads do NOT unload the page.
-// Those forms are handled separately via data-pdf-export (fetch + blob) so loading state always clears.
+// Forms: data-confirm, double-submit guard, submit loading state.
+// PDF downloads use data-pdf-export (fetch) so the page does not hang on blob/new-tab flows.
 
 function setButtonLoading(button, isLoading) {
     const loadingText = button.getAttribute('data-loading-text') || 'Working...';
@@ -155,7 +150,7 @@ function setButtonLoading(button, isLoading) {
     }
 }
 
-/** Restore stuck loading states after back-forward cache or interrupted navigations */
+/** Clear stuck submit locks after bfcache/navigation quirks */
 function resetAllSubmitLocks() {
     document.querySelectorAll('form[data-submitting="1"]').forEach((form) => {
         form.dataset.submitting = '';
@@ -171,16 +166,9 @@ const PDF_FETCH_TIMEOUT_MS = 120000;
 
 const PDF_POLL_INTERVAL_MS = 1500;
 
-/** Hard stop so the UI never waits indefinitely */
 const PDF_POLL_MAX_MS = 300000;
-
-/** If job stays "queued", the worker is probably not running */
 const PDF_QUEUE_STALL_MS = 75000;
-
-/** Per status-poll HTTP timeout (avoid hanging fetch if PHP-FPM wedges) */
 const PDF_POLL_FETCH_TIMEOUT_MS = 25000;
-
-/** If DomPDF hangs in worker, polling would never see "completed" */
 const PDF_PROCESSING_STALL_MS = 180000;
 
 function pdfExportDebugEnabled() {
@@ -256,8 +244,22 @@ async function pollExportUntilReady(statusUrl) {
         }
 
         const payload = await res.json();
+
+        if (payload.success === false) {
+            throw new Error(payload.message || 'Export status request failed.');
+        }
+
         const data = payload.data ?? payload;
-        const status = data.status;
+        const status = data?.status;
+
+        if (typeof status !== 'string') {
+            throw new Error('Invalid export status response. Refresh and try again.');
+        }
+
+        const known = ['queued', 'processing', 'completed', 'failed'];
+        if (!known.includes(status)) {
+            throw new Error(`Unexpected export status: ${status}`);
+        }
 
         if (pdfExportDebugEnabled()) {
             console.debug('[pdf-export] poll status', status, data);

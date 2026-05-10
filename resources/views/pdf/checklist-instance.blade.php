@@ -45,7 +45,8 @@
             <dt>Completion date</dt>
             <dd>{{ $completion instanceof \Carbon\CarbonInterface ? $completion->format('Y-m-d H:i') : '—' }}</dd>
             <dt>Status</dt>
-            <dd><span class="status-pill">{{ $instance->status->label() }}</span></dd>
+            {{-- Inline-table chip: DomPDF mis-sizes inline-block pills beside floated dt; td centers text reliably. --}}
+            <dd class="meta-dd-chip"><table class="pdf-meta-chip" role="presentation"><tr><td>{{ $instance->status->label() }}</td></tr></table></dd>
             <dt>Record version</dt>
             <dd>{{ $instance->current_version }}</dd>
             @if ($detailLevel === \App\Enums\ExportDetailLevel::Detailed)

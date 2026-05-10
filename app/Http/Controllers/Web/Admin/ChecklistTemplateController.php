@@ -106,6 +106,6 @@ class ChecklistTemplateController extends Controller
 
         return redirect()
             ->route('admin.templates.index')
-            ->with('status', 'Template archived. Historical checklist records are preserved.');
+            ->with('status', 'Template archived.');
     }
 }

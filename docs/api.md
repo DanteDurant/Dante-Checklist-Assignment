@@ -1,14 +1,15 @@
 ## Compliance Checklist API (Laravel Sanctum)
 
-### Who this is for
+### Audience
 
-This guide is written for evaluators who want to quickly verify the API works end-to-end using Postman (no prior project context assumed).
+Use this with Postman or curl to exercise the API without digging through the codebase.
 
 ### Base URL
 
-- Local: `http://localhost:8000`
+- Native: `http://localhost:8000` (`php artisan serve`)
+- Docker (Compose): `http://localhost:8080` (see project README)
 
-All endpoints below are under the `/api` prefix.
+Paths below use the `/api` prefix.
 
 ---
 

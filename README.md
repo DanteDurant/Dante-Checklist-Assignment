@@ -1,13 +1,13 @@
 # Compliance Checklist Assessment (Laravel 11)
 
-Laravel 11 REST API for managing compliance checklist templates (admin) and completing checklist assessments (auditor).
+Compliance checklist system: admins maintain templates and questions; auditors complete assessments.
 
-- **Authentication**: Laravel Sanctum (token-based)
-- **Authorization**: Spatie Laravel Permission (roles + middleware) + Laravel Policies
+- **Auth**: Sanctum (API tokens) + session cookies for the web UI  
+- **Roles**: Spatie Permission (`admin` / `auditor`) + policies
 
-## Docker Compose (recommended for evaluators)
+## Docker Compose (recommended)
 
-Fully containerized stack: **PHP 8.3-FPM**, **Nginx**, **MySQL 8**, **queue worker** (required for async PDF exports), optional **Vite** dev profile.
+Stack: **PHP 8.3-FPM**, **Nginx**, **MySQL 8**, **queue worker** (PDF jobs), optional **Vite** profile.
 
 ### Prerequisites
 
@@ -30,10 +30,10 @@ Config files live under **`docker/nginx/`** and **`docker/php/`**.
 From the **`checklist-assignment/`** directory (repository root that contains `artisan`):
 
 ```bash
-# 0) Environment — use Docker template (recommended) so DB host / Sanctum / APP_URL match Compose
+# 0) Environment (DB host, APP_URL, Sanctum domains — must match Compose)
 cp docker/env.docker.example .env
 
-# 1) Infrastructure (needs .env present for env_file mounts on app / queue — use .env.example as stub if copying later)
+# 1) Containers (`app` / `queue` read `.env` via env_file)
 docker compose up -d --build
 
 # 2) App key & dependencies
@@ -101,6 +101,8 @@ docker compose down               # stop; add -v to drop MySQL volume
 | **Queued PDFs never finish** | Check **`queue`** logs; ensure migrations ran (`jobs` table). Run `docker compose restart queue` |
 | **Missing `vendor` / `node_modules`** | `docker compose exec app composer install` and `npm install` |
 | **Stale config** | `docker compose exec app php artisan config:clear` |
+| **`Unknown column 'deleted_at'`** / seeder fails | Run **`docker compose exec app php artisan migrate`** so **`2026_05_10_*_add_soft_deletes_to_checklist_templates`** applies (templates use soft deletes). |
+| **`php artisan test` fails with MySQL “mysql” host** | Tests use **SQLite in-memory** via **`phpunit.xml`** — ensure it includes **`DB_CONNECTION=sqlite`** / **`DB_DATABASE=:memory:`** (default in this repo). |
 
 ---
 
@@ -229,7 +231,7 @@ php artisan serve
 
 ## Running tests
 
-This project uses **PHPUnit** (see `phpunit.xml`). Full testing layout, filters, and coverage notes: **`docs/testing.md`**.
+This project uses **PHPUnit** (see `phpunit.xml`). **`phpunit.xml` pins `DB_CONNECTION=sqlite` and `DB_DATABASE=:memory:`** so the suite does not depend on MySQL or your personal `.env` (for example Docker’s `DB_HOST=mysql`). Full layout and coverage notes: **`docs/testing.md`**.
 
 ```bash
 # Full suite
@@ -243,12 +245,10 @@ php artisan test --filter=PublicApi
 php artisan migrate:fresh --seed
 ```
 
-## Project architecture overview
-
-High-level layering (clean architecture style):
+## Project layout
 
 - **HTTP layer**
-  - Controllers: `app/Http/Controllers/Api/V1/**`
+  - Controllers: stable **`app/Http/Controllers/Api/**`** (`/api/*`) and versioned **`app/Http/Controllers/Api/V1/**`** (`/api/v1/*`)
   - Validation: `app/Http/Requests/**` (Form Requests)
   - Serialization: `app/Http/Resources/**` (API Resources)
 
@@ -271,17 +271,15 @@ High-level layering (clean architecture style):
 
 ## API documentation summary
 
-Evaluator docs:
+- **`docs/api.md`** — endpoints, PDF export behavior, Postman, troubleshooting  
+- **`docs/testing.md`** — how tests are organized  
+- **`postman/Compliance-Management-System.postman_collection.json`** — import into Postman (includes PDF exports)
 
-- API guide: `docs/api.md` (includes **PDF Export System (Synchronous & Asynchronous)**, Postman steps, status lifecycle, troubleshooting)
-- Testing guide: `docs/testing.md` (suite structure, commands, coverage map)
-- Postman collection: `postman/Compliance-Management-System.postman_collection.json` (folder **Exports (PDF System)**)
+### PDF exports and queues
 
-### PDF exports and queue workers
+Small exports can return a PDF immediately; larger ones use the **`database`** queue (`jobs` table). Thresholds live in **`config/pdf_exports.php`**.
 
-Exports may return a PDF immediately (**synchronous**) or enqueue a background job (**asynchronous**) depending on dataset size and settings in **`config/pdf_exports.php`**.
-
-**Admin “Portfolio PDF snapshot” (Compliance snapshot)** historically queued when filtered instance counts were high; without a worker the UI polled forever. **`APP_ENV=local`** now defaults **`PDF_SNAPSHOT_FORCE_SYNC_MAX_INSTANCES=25000`** (via config) so the dashboard snapshot is generated **inline** up to that cap — **no `queue:work` required** on a typical laptop database. Tune with:
+For **local / Docker demos**, the compliance snapshot defaults to **inline** generation up to **`PDF_SNAPSHOT_FORCE_SYNC_MAX_INSTANCES`** (25000 instances when `APP_ENV=local`) so the dashboard does not depend on a worker for typical seeded data. Override with:
 
 ```env
 # Omit for production (use queue thresholds). In local dev, omit to keep the safe default sync cap.
@@ -301,15 +299,13 @@ php artisan queue:work
 
 - Ensure `.env` has `QUEUE_CONNECTION=database` when using the database driver, and run `php artisan migrate` so the **`jobs`** and **`failed_jobs`** tables exist.
 
-**Debugging stuck exports:** check **`storage/logs/laravel.log`** for `pdf_export.*` lines (`pdf_export.job.start`, `pdf_export.job.completed`, `pdf_export.enqueue.dispatched`, etc.). In the browser DevTools console, enable client tracing with:
+**Stuck export UI:** check **`storage/logs/laravel.log`** (`pdf_export.*`). In the browser console:
 
 ```js
 localStorage.setItem('PDF_EXPORT_DEBUG', '1');
 ```
 
 Reload, retry export, then inspect `[pdf-export]` messages.
-
-Full behavior and API examples are in **`docs/api.md`**.
 
 ### Stable external API (`/api/*`)
 
@@ -382,8 +378,18 @@ Checklist completion flow:
 - `PUT /auditor/checklist-instances/{instance}/answers` (save draft progress)
 - `POST /auditor/checklist-instances/{instance}/complete` (submit + lock)
 
+## Submission checklist (evaluators)
+
+1. **`.env`**: Docker → copy **`docker/env.docker.example`**; native → copy **`.env.example`** (see setup sections above).
+2. **Dependencies & DB**: **`composer install`**, **`php artisan key:generate`**, **`php artisan migrate --seed`** (Docker: use **First-time setup** commands).
+3. **Assets**: **`npm install`** && **`npm run build`** (in **`app`** container if using Docker).
+4. **Smoke test**: **http://localhost:8080** — **`admin@example.com` / `password`** (see **Test credentials**).
+5. **Tests**: **`php artisan test`** (PHPUnit uses SQLite **`:memory:`** from **`phpunit.xml`**, not your MySQL `.env`).
+6. **API**: **`POST /api/login`** → Bearer token; details in **`docs/api.md`** and the Postman collection.
+
 ## Notes
 
-- Templates and instances include a `public_id` ULID intended for safe external exposure.
-- Feature tests live in `tests/Feature` and cover auth, roles, template CRUD, completion rules, and reporting filters.
+- Templates and instances expose a **`public_id`** (ULID) for stable external references.
+- **Deleting** a template **archives** it (soft delete); existing checklist instances stay linked for reporting (`docs/api.md`).
+- **`tests/Feature`** covers auth, RBAC, templates, completion, reporting, PDF exports, and validation.
 

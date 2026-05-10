@@ -32,6 +32,7 @@ final class ExportStatusController extends Controller
                 'exports.download',
                 now()->addHour(),
                 ['export' => $export->uuid],
+                false,
             );
         }
 
