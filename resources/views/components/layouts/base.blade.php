@@ -31,11 +31,13 @@
         <x-ui.flash type="error" :message="session('error')" />
 
         @if ($errors->any())
-            <x-ui.flash type="error" message="Please review the highlighted fields and try again." />
+            <x-ui.flash type="error" :message="$errors->first() ?: 'Please review the highlighted fields and try again.'" />
         @endif
 
         {{ $slot }}
     </main>
 </div>
+
+<div id="ui-toast-root" class="pointer-events-none fixed bottom-4 right-4 z-50 flex max-w-sm flex-col gap-2 p-2 sm:bottom-6 sm:right-6" aria-live="polite"></div>
 </body>
 </html>

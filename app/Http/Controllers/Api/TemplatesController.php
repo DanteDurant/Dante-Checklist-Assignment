@@ -77,6 +77,6 @@ class TemplatesController extends Controller
 
         $this->service->delete($template);
 
-        return $this->success(null, 'Template deleted', 200);
+        return $this->success(null, 'Template archived successfully.', 200);
     }
 }

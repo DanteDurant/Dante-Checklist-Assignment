@@ -37,7 +37,8 @@ class ChecklistQuestion extends Model
 
     public function template(): BelongsTo
     {
-        return $this->belongsTo(ChecklistTemplate::class, 'checklist_template_id');
+        return $this->belongsTo(ChecklistTemplate::class, 'checklist_template_id')
+            ->withTrashed();
     }
 
     public function answers(): HasMany

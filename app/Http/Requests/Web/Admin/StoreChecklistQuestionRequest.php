@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Requests\Api\V1\ChecklistTemplates;
+namespace App\Http\Requests\Web\Admin;
 
 use App\Enums\ChecklistQuestionType;
 use App\Http\Requests\Concerns\TrimsQuestionText;
@@ -35,10 +35,8 @@ class StoreChecklistQuestionRequest extends FormRequest
             ],
             'answer_type' => ['required', new Enum(ChecklistQuestionType::class)],
             'required' => ['sometimes', 'boolean'],
-            'sort_order' => ['sometimes', 'integer', 'min:0', 'max:1000000'],
-            'options' => ['sometimes', 'nullable', 'array', 'max:200'],
-            'options.*.value' => ['required_with:options', 'string', 'max:255'],
-            'options.*.label' => ['required_with:options', 'string', 'max:255'],
+            'sort_order' => ['required', 'integer', 'min:0', 'max:1000000'],
+            'options_text' => ['nullable', 'string', 'max:10000'],
         ];
     }
 
@@ -48,6 +46,7 @@ class StoreChecklistQuestionRequest extends FormRequest
             'question_text' => 'question text',
             'answer_type' => 'answer type',
             'sort_order' => 'sort order',
+            'options_text' => 'options',
         ];
     }
 }

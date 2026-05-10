@@ -321,7 +321,7 @@ Auth:
 
 Admin (requires `auth:sanctum` + `role:admin`):
 
-- Templates: `GET/POST /api/templates`, `GET/PUT/DELETE /api/templates/{template}`
+- Templates: `GET/POST /api/templates`, `GET/PUT/DELETE /api/templates/{template}` (`DELETE` **soft-deletes** the template; checklist history is kept)
 - Questions: `POST /api/templates/{template}/questions`, `PUT/DELETE /api/questions/{question}`
 - Reports: `GET /api/reports`
 

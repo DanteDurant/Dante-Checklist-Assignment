@@ -38,7 +38,7 @@ final class PdfExportDocumentFactory
             ),
             ExportType::ChecklistReport => $this->documentForChecklistReport($filters, $rowCap),
             ExportType::ChecklistTemplate => $this->documentForChecklistTemplate(
-                ChecklistTemplate::query()->findOrFail((int) ($filters['checklist_template_id'] ?? 0)),
+                ChecklistTemplate::withTrashed()->findOrFail((int) ($filters['checklist_template_id'] ?? 0)),
                 $filters,
             ),
             ExportType::ComplianceSnapshot => $this->documentForComplianceSnapshot($filters),
@@ -83,7 +83,7 @@ final class PdfExportDocumentFactory
 
         $templateLabel = 'Any';
         if (! empty($filters['template_id'])) {
-            $templateLabel = ChecklistTemplate::query()
+            $templateLabel = ChecklistTemplate::withTrashed()
                 ->whereKey((int) $filters['template_id'])
                 ->value('name')
                 ?: 'Unknown template';

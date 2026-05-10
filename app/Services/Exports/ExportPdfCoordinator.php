@@ -257,7 +257,7 @@ final class ExportPdfCoordinator
      */
     private function apiChecklistTemplate(User $user, array $filters): SymfonyResponse
     {
-        $template = ChecklistTemplate::query()->findOrFail((int) ($filters['checklist_template_id'] ?? 0));
+        $template = ChecklistTemplate::withTrashed()->findOrFail((int) ($filters['checklist_template_id'] ?? 0));
 
         Gate::authorize('exportPdf', $template);
 

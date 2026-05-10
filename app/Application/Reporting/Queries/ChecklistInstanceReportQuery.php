@@ -119,7 +119,7 @@ class ChecklistInstanceReportQuery
                             ->where('name', 'like', $pattern)
                             ->orWhere('email', 'like', $pattern);
                     })->orWhereHas('template', function (Builder $template) use ($pattern) {
-                        $template->where('name', 'like', $pattern);
+                        $template->withTrashed()->where('name', 'like', $pattern);
                     })->orWhere('status', 'like', $pattern);
                 });
             }

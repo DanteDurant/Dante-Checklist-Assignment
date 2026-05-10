@@ -56,9 +56,10 @@ final class PublicApiTemplatesFeatureTest extends TestCase
             ->assertJsonPath('data.title', 'Updated Title');
 
         $this->deleteJson("/api/templates/{$id}")
-            ->assertOk();
+            ->assertOk()
+            ->assertJsonPath('message', 'Template archived successfully.');
 
-        $this->assertDatabaseMissing('checklist_templates', ['id' => $id]);
+        $this->assertSoftDeleted('checklist_templates', ['id' => $id]);
     }
 
     public function test_auditor_cannot_create_templates_on_public_api(): void

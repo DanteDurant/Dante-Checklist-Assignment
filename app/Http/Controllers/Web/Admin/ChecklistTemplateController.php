@@ -7,6 +7,7 @@ use App\Application\ChecklistTemplates\Services\ChecklistTemplateService;
 use App\Enums\ChecklistTemplateStatus;
 use App\Http\Controllers\Controller;
 use App\Models\ChecklistTemplate;
+use App\Support\QuestionTextNormalizer;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rules\Enum;
@@ -68,6 +69,11 @@ class ChecklistTemplateController extends Controller
             'template' => $template,
             'questions' => $questions,
             'search' => $search,
+            'existing_question_signatures' => $template->questions()
+                ->pluck('label')
+                ->map(fn (string $label) => QuestionTextNormalizer::normalize($label))
+                ->values()
+                ->all(),
         ]);
     }
 
@@ -100,6 +106,6 @@ class ChecklistTemplateController extends Controller
 
         return redirect()
             ->route('admin.templates.index')
-            ->with('status', 'Template deleted.');
+            ->with('status', 'Template archived. Historical checklist records are preserved.');
     }
 }

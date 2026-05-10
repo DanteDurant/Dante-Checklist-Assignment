@@ -41,10 +41,10 @@
 
                 <div class="mt-5">
                     <form method="POST" action="{{ route('admin.templates.destroy', $template) }}"
-                          data-confirm="Delete this template? This will cascade-delete its questions.">
+                          data-confirm="Archive this template? It will be hidden from lists. Completed checklists and audit history stay in the system.">
                         @csrf
                         @method('DELETE')
-                        <x-ui.button type="submit" variant="danger" data-loading-text="Deleting...">Delete template</x-ui.button>
+                        <x-ui.button type="submit" variant="danger" data-loading-text="Archiving…">Archive template</x-ui.button>
                     </form>
                 </div>
             </x-ui.card>
@@ -144,11 +144,15 @@
 
         <div>
             <x-ui.card title="Add question" description="Simple form-based creation (no JS framework).">
-                <form method="POST" action="{{ route('admin.templates.questions.store', $template) }}" class="space-y-4">
+                <form method="POST" action="{{ route('admin.templates.questions.store', $template) }}" class="space-y-4"
+                      data-question-duplicate-check
+                      data-existing-normalized="{{ e(json_encode($existing_question_signatures ?? [])) }}">
                     @csrf
 
                     <x-ui.field label="Question text" name="question_text">
-                        <x-ui.textarea id="question_text" name="question_text" rows="4" required>{{ old('question_text') }}</x-ui.textarea>
+                        <x-ui.textarea id="question_text" name="question_text" rows="4" required
+                                       data-question-duplicate-input>{{ old('question_text') }}</x-ui.textarea>
+                        <p data-question-duplicate-hint class="hidden text-sm font-medium text-amber-800 dark:text-amber-200" role="status"></p>
                     </x-ui.field>
 
                     <div class="grid gap-4 sm:grid-cols-2">

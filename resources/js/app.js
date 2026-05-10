@@ -33,7 +33,78 @@ document.addEventListener('click', (event) => {
     setTheme(next);
 });
 
+/** Lightweight toast (enterprise SaaS-style feedback; supports dark mode classes). */
+function showToast(message, type = 'info') {
+    const root = document.getElementById('ui-toast-root');
+    if (!root || !message) return;
+
+    const styles = {
+        error: 'border-rose-300/80 bg-rose-50 text-rose-950 dark:border-rose-800 dark:bg-rose-950/80 dark:text-rose-50',
+        success:
+            'border-emerald-300/80 bg-emerald-50 text-emerald-950 dark:border-emerald-800 dark:bg-emerald-950/80 dark:text-emerald-50',
+        info: 'border-ui-border bg-ui-surface text-ui-fg shadow-ui-sm',
+    };
+
+    const el = document.createElement('div');
+    el.setAttribute('role', 'status');
+    el.className = `pointer-events-auto max-w-sm rounded-lg border px-4 py-3 text-sm font-medium leading-relaxed shadow-lg ${
+        styles[type] || styles.info
+    }`;
+    el.textContent = message;
+    root.appendChild(el);
+
+    window.setTimeout(() => {
+        el.classList.add('opacity-0', 'transition-opacity', 'duration-300');
+        window.setTimeout(() => el.remove(), 350);
+    }, 4500);
+}
+
+window.showToast = showToast;
+
+function normalizeQuestionTextClient(value) {
+    return String(value ?? '')
+        .trim()
+        .replace(/\s+/g, ' ')
+        .toLowerCase();
+}
+
+function initDuplicateQuestionHint() {
+    const form = document.querySelector('form[data-question-duplicate-check]');
+    if (!form) return;
+
+    let existing = [];
+    try {
+        existing = JSON.parse(form.getAttribute('data-existing-normalized') || '[]');
+    } catch {
+        existing = [];
+    }
+    if (!Array.isArray(existing)) existing = [];
+
+    const input = form.querySelector('[data-question-duplicate-input]');
+    const hint = form.querySelector('[data-question-duplicate-hint]');
+    if (!(input instanceof HTMLElement) || !(hint instanceof HTMLElement)) return;
+
+    const refresh = () => {
+        const n = normalizeQuestionTextClient(input.value);
+        const dup = n !== '' && existing.includes(n);
+        if (dup) {
+            hint.textContent = 'That question already exists in this template.';
+            hint.classList.remove('hidden');
+            input.setAttribute('aria-invalid', 'true');
+        } else {
+            hint.classList.add('hidden');
+            hint.textContent = '';
+            input.removeAttribute('aria-invalid');
+        }
+    };
+
+    input.addEventListener('input', refresh);
+    refresh();
+}
+
 document.addEventListener('DOMContentLoaded', () => {
+    initDuplicateQuestionHint();
+
     // Ensure icons reflect whichever theme was applied pre-load.
     const current = document.documentElement.classList.contains('dark') ? 'dark' : 'light';
     applyTheme(current);
@@ -380,10 +451,13 @@ async function handlePdfExport(form) {
             window.clearTimeout(abortTimer);
         }
         if (err?.name === 'AbortError') {
-            window.alert('PDF export timed out. Please try again with fewer filters or a smaller scope.');
+            window.showToast?.(
+                'PDF export timed out. Try again with fewer filters or a smaller scope.',
+                'error',
+            );
         } else {
             console.error(err);
-            window.alert(err?.message || 'PDF export failed. Please try again.');
+            window.showToast?.(err?.message || 'PDF export failed. Please try again.', 'error');
         }
     } finally {
         resetFlight();

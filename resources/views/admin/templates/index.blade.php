@@ -50,11 +50,11 @@
                     <div class="mt-3 flex flex-wrap gap-2">
                         <x-ui.button :href="route('admin.templates.show', $t)" variant="secondary">View</x-ui.button>
                         <form method="POST" action="{{ route('admin.templates.destroy', $t) }}"
-                              data-confirm="Delete this template? This will cascade-delete its questions."
+                              data-confirm="Archive this template? It will be hidden from lists. Completed checklists and audit history stay in the system."
                               class="inline">
                             @csrf
                             @method('DELETE')
-                            <x-ui.button type="submit" variant="danger" data-loading-text="Deleting...">Delete</x-ui.button>
+                            <x-ui.button type="submit" variant="danger" data-loading-text="Archiving…">Archive</x-ui.button>
                         </form>
                     </div>
                 </x-ui.card>
@@ -85,11 +85,11 @@
                             <div class="flex flex-wrap gap-2">
                                 <x-ui.button :href="route('admin.templates.edit', $t)" variant="secondary">Edit</x-ui.button>
                                 <form method="POST" action="{{ route('admin.templates.destroy', $t) }}"
-                                      data-confirm="Delete this template? This will cascade-delete its questions."
+                                      data-confirm="Archive this template? It will be hidden from lists. Completed checklists and audit history stay in the system."
                                       class="inline">
                                     @csrf
                                     @method('DELETE')
-                                    <x-ui.button type="submit" variant="danger" data-loading-text="Deleting...">Delete</x-ui.button>
+                                    <x-ui.button type="submit" variant="danger" data-loading-text="Archiving…">Archive</x-ui.button>
                                 </form>
                             </div>
                         </td>

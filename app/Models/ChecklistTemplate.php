@@ -9,10 +9,12 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class ChecklistTemplate extends Model
 {
     use HasFactory;
+    use SoftDeletes;
 
     protected $fillable = [
         'public_id',
@@ -28,6 +30,7 @@ class ChecklistTemplate extends Model
         'status' => ChecklistTemplateStatus::class,
         'published_at' => 'datetime',
         'archived_at' => 'datetime',
+        'deleted_at' => 'datetime',
     ];
 
     public function creator(): BelongsTo

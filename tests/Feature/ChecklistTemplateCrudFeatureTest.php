@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Enums\ChecklistQuestionType;
 use App\Enums\ChecklistTemplateStatus;
+use App\Models\ChecklistInstance;
 use App\Models\ChecklistTemplate;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -42,6 +43,33 @@ class ChecklistTemplateCrudFeatureTest extends TestCase
 
         $this->deleteJson("/api/v1/checklist-templates/{$templateId}")
             ->assertNoContent();
+
+        $this->assertSoftDeleted('checklist_templates', ['id' => $templateId]);
+    }
+
+    public function test_admin_can_archive_template_even_when_checklist_instances_exist(): void
+    {
+        $admin = User::factory()->create();
+        $admin->assignRole('admin');
+        Sanctum::actingAs($admin);
+
+        $template = ChecklistTemplate::factory()->published()->create();
+
+        $auditor = User::factory()->create();
+        $auditor->assignRole('auditor');
+
+        ChecklistInstance::factory()->create([
+            'checklist_template_id' => $template->id,
+            'auditor_id' => $auditor->id,
+        ]);
+
+        $this->deleteJson("/api/v1/checklist-templates/{$template->id}")
+            ->assertNoContent();
+
+        $this->assertSoftDeleted('checklist_templates', ['id' => $template->id]);
+        $this->assertDatabaseHas('checklist_instances', [
+            'checklist_template_id' => $template->id,
+        ]);
     }
 
     public function test_auditor_cannot_access_admin_template_crud_routes(): void

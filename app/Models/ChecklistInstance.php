@@ -35,7 +35,8 @@ class ChecklistInstance extends Model
 
     public function template(): BelongsTo
     {
-        return $this->belongsTo(ChecklistTemplate::class, 'checklist_template_id');
+        return $this->belongsTo(ChecklistTemplate::class, 'checklist_template_id')
+            ->withTrashed();
     }
 
     public function auditor(): BelongsTo
@@ -59,7 +60,7 @@ class ChecklistInstance extends Model
         }
 
         return $query->where(function (Builder $q) use ($pattern) {
-            $q->whereHas('template', fn (Builder $t) => $t->where('name', 'like', $pattern))
+            $q->whereHas('template', fn (Builder $t) => $t->withTrashed()->where('name', 'like', $pattern))
                 ->orWhere('status', 'like', $pattern);
         });
     }

@@ -200,6 +200,8 @@ Query:
 ### PUT `/api/templates/{template}`
 ### DELETE `/api/templates/{template}`
 
+**Delete behavior:** Removes the template from active admin/auditor listings (**soft delete**). Checklist instances already completed against that template remain in the database for audit/reporting; foreign keys are unchanged. The same applies to **DELETE `/api/v1/checklist-templates/{template}`** and the admin web UI “delete template” action.
+
 ---
 
 ## Questions (admin)
