@@ -30,6 +30,13 @@
                     </x-ui.select>
                 </x-ui.field>
 
+                <div class="sm:col-span-2 lg:col-span-4">
+                    <x-ui.field label="Search" name="q" hint="Matches template name, auditor name/email, or status.">
+                        <x-ui.input id="q" name="q" type="search" value="{{ old('q', $filters['q'] ?? '') }}" autocomplete="off"
+                                    placeholder="Template, auditor, status…" />
+                    </x-ui.field>
+                </div>
+
                 <div class="flex flex-wrap gap-2 pt-2 sm:col-span-2 lg:col-span-4">
                     <x-ui.button type="submit" data-loading-text="Applying...">Apply filters</x-ui.button>
                     <x-ui.button :href="route('admin.reports.checklist_instances')" variant="secondary">Reset</x-ui.button>

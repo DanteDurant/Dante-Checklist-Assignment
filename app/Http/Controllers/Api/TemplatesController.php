@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Application\ChecklistTemplates\Services\ChecklistTemplateService;
 use App\Http\Controllers\Api\Concerns\ApiResponses;
+use App\Http\Controllers\Concerns\ResolvesPerPage;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\V1\ChecklistTemplates\StoreChecklistTemplateRequest;
 use App\Http\Requests\Api\V1\ChecklistTemplates\UpdateChecklistTemplateRequest;
@@ -15,19 +16,18 @@ use Illuminate\Http\Request;
 class TemplatesController extends Controller
 {
     use ApiResponses;
+    use ResolvesPerPage;
 
-    public function __construct(private readonly ChecklistTemplateService $service)
-    {
-    }
+    public function __construct(private readonly ChecklistTemplateService $service) {}
 
     public function index(Request $request): JsonResponse
     {
         $this->authorize('viewAny', ChecklistTemplate::class);
 
-        $perPage = (int) $request->integer('per_page', 15);
-        $perPage = max(1, min($perPage, 100));
+        $perPage = $this->resolvePerPage($request);
+        $search = $request->input('search');
 
-        $paginator = $this->service->paginate($perPage);
+        $paginator = $this->service->paginate($perPage, is_string($search) ? $search : null);
 
         return $this->success([
             'items' => ChecklistTemplateResource::collection($paginator->items())->resolve(),
@@ -80,4 +80,3 @@ class TemplatesController extends Controller
         return $this->success(null, 'Template deleted', 200);
     }
 }
-

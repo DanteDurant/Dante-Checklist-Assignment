@@ -32,6 +32,12 @@ final class PublicApiTemplatesFeatureTest extends TestCase
                 ],
             ]);
 
+        ChecklistTemplate::factory()->create(['name' => 'Safety Audit Alpha']);
+
+        $this->getJson('/api/templates?search=Safety')
+            ->assertOk()
+            ->assertJsonPath('data.meta.total', 1);
+
         $create = $this->postJson('/api/templates', [
             'title' => 'Public API Template',
             'description' => 'Created in feature test',

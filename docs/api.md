@@ -187,7 +187,8 @@ Headers: `Authorization: Bearer <token>`
 ### GET `/api/templates`
 
 Query:
-- `per_page` (1–100)
+- `per_page` (1–100; default from `config/list.php`)
+- `search` — optional; case-insensitive partial match on **title** (`name`) and **description**
 
 ### POST `/api/templates`
 
@@ -232,6 +233,7 @@ Notes:
 
 Query:
 - `per_page` (1–100)
+- `search` — optional; matches **template name** or **instance status** (partial)
 
 ### POST `/api/checklists/start/{template}`
 
@@ -269,7 +271,8 @@ Filters:
 - `date_to` (date, after_or_equal date_from)
 - `template_id` (int)
 - `auditor_id` (int)
-- `q` (string search)
+- `q` (string search across template name, auditor name/email, and status)
+- `search` — optional alias for `q`
 - `per_page` (1–100)
 
 ---
@@ -421,11 +424,13 @@ Poll **`GET /api/exports/{export_uuid}`** until completed (or follow `status_url
 
 #### `GET /api/exports`
 
-**Purpose:** List recent exports for the current user (status overview).
+**Purpose:** Paginated list of exports for the current user (status overview).
 
 **Query:**
 
-- `all` — optional; if `1` and the user is an **admin**, listing includes a broader recent set (still capped server-side).
+- `per_page` (1–100)
+- `search` — optional; partial match on `export_type`, `status`, or `original_filename`
+- `all` — optional; if `1` and the user is an **admin**, listing is not restricted to the current user’s rows
 
 **Example:**
 
@@ -441,7 +446,7 @@ Authorization: Bearer YOUR_TOKEN
   "success": true,
   "message": "OK",
   "data": {
-    "exports": [
+    "items": [
       {
         "uuid": "550e8400-e29b-41d4-a716-446655440000",
         "export_type": "checklist_report",
@@ -450,7 +455,13 @@ Authorization: Bearer YOUR_TOKEN
         "completed_at": "2026-05-09T12:00:05+00:00",
         "download_url": "http://localhost:8000/exports/550e8400-e29b-41d4-a716-446655440000/download?expires=…&signature=…"
       }
-    ]
+    ],
+    "meta": {
+      "current_page": 1,
+      "per_page": 15,
+      "total": 1,
+      "last_page": 1
+    }
   }
 }
 ```

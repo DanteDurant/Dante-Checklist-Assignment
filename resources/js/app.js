@@ -96,48 +96,91 @@ window.addEventListener('pageshow', () => {
     resetAllSubmitLocks();
 });
 
-function parseFilenameFromContentDisposition(header) {
-    if (!header || typeof header !== 'string') {
-        return 'export.pdf';
-    }
-    const utf8 = /filename\*=UTF-8''([^;\n]+)/i.exec(header);
-    if (utf8) {
-        try {
-            return decodeURIComponent(utf8[1].trim());
-        } catch {
-            return 'export.pdf';
-        }
-    }
-    const quoted = /filename="([^"]+)"/i.exec(header);
-    if (quoted) {
-        return quoted[1];
-    }
-    const loose = /filename=([^;\n]+)/i.exec(header);
-    if (loose) {
-        return loose[1].replace(/^["']|["']$/g, '').trim();
-    }
-    return 'export.pdf';
-}
-
 const PDF_FETCH_TIMEOUT_MS = 120000;
 
 const PDF_POLL_INTERVAL_MS = 1500;
 
-const PDF_POLL_MAX_MS = 600000;
+/** Hard stop so the UI never waits indefinitely */
+const PDF_POLL_MAX_MS = 300000;
+
+/** If job stays "queued", the worker is probably not running */
+const PDF_QUEUE_STALL_MS = 75000;
+
+/** Per status-poll HTTP timeout (avoid hanging fetch if PHP-FPM wedges) */
+const PDF_POLL_FETCH_TIMEOUT_MS = 25000;
+
+/** If DomPDF hangs in worker, polling would never see "completed" */
+const PDF_PROCESSING_STALL_MS = 180000;
+
+function pdfExportDebugEnabled() {
+    try {
+        return window.localStorage?.getItem?.('PDF_EXPORT_DEBUG') === '1';
+    } catch (e) {
+        return false;
+    }
+}
+
+function resolveAbsoluteUrl(url) {
+    if (!url || typeof url !== 'string') {
+        return url;
+    }
+    try {
+        return new URL(url, window.location.origin).href;
+    } catch {
+        return url;
+    }
+}
+
+async function fetchJsonWithTimeout(url, options, timeoutMs) {
+    const ctrl = new AbortController();
+    const timer = window.setTimeout(() => ctrl.abort(), timeoutMs);
+
+    try {
+        return await fetch(url, {
+            ...options,
+            signal: ctrl.signal,
+        });
+    } finally {
+        window.clearTimeout(timer);
+    }
+}
 
 async function pollExportUntilReady(statusUrl) {
+    const absoluteUrl = resolveAbsoluteUrl(statusUrl);
     const started = Date.now();
+    let processingSince = null;
 
     while (Date.now() - started < PDF_POLL_MAX_MS) {
-        const res = await fetch(statusUrl, {
-            credentials: 'same-origin',
-            headers: {
-                Accept: 'application/json',
-                'X-Requested-With': 'XMLHttpRequest',
-            },
-        });
+        let res;
+        try {
+            res = await fetchJsonWithTimeout(
+                absoluteUrl,
+                {
+                    credentials: 'same-origin',
+                    headers: {
+                        Accept: 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest',
+                    },
+                },
+                PDF_POLL_FETCH_TIMEOUT_MS,
+            );
+        } catch (ee) {
+            if (pdfExportDebugEnabled()) {
+                console.warn('[pdf-export] poll fetch error', ee);
+            }
+            if (ee?.name === 'AbortError') {
+                throw new Error(
+                    'Status check timed out. The server may be overloaded or unreachable — refresh and try again.',
+                );
+            }
+            throw ee;
+        }
 
         if (!res.ok) {
+            const text = await res.text().catch(() => '');
+            if (pdfExportDebugEnabled()) {
+                console.warn('[pdf-export] poll non-OK', res.status, text.slice(0, 400));
+            }
             throw new Error(`Status check failed (${res.status})`);
         }
 
@@ -145,7 +188,16 @@ async function pollExportUntilReady(statusUrl) {
         const data = payload.data ?? payload;
         const status = data.status;
 
-        if (status === 'completed' && data.download_url) {
+        if (pdfExportDebugEnabled()) {
+            console.debug('[pdf-export] poll status', status, data);
+        }
+
+        if (status === 'completed') {
+            if (!data.download_url) {
+                throw new Error(
+                    'Export finished but no download link was returned. Check storage permissions and server logs.',
+                );
+            }
             window.location.assign(data.download_url);
 
             return;
@@ -155,10 +207,29 @@ async function pollExportUntilReady(statusUrl) {
             throw new Error(data.error || 'Export failed.');
         }
 
+        if (status === 'queued' && Date.now() - started > PDF_QUEUE_STALL_MS) {
+            throw new Error(
+                'Export is still queued — no background worker picked up the job. Run `php artisan queue:work`, or set QUEUE_CONNECTION=sync (or APP_ENV=local with default snapshot sync) in `.env`.',
+            );
+        }
+
+        if (status === 'processing') {
+            processingSince ??= Date.now();
+            if (Date.now() - processingSince > PDF_PROCESSING_STALL_MS) {
+                throw new Error(
+                    'PDF generation is taking unusually long (>3 min processing). Your queue worker may be stuck, or DomPDF timed out — check storage/logs/laravel.log and php artisan queue:failed.',
+                );
+            }
+        } else {
+            processingSince = null;
+        }
+
         await new Promise((r) => setTimeout(r, PDF_POLL_INTERVAL_MS));
     }
 
-    throw new Error('Export is still processing. Check back in a few minutes or refresh the page.');
+    throw new Error(
+        'Export is taking longer than expected. Ensure `php artisan queue:work` is running, then retry.',
+    );
 }
 
 async function handlePdfExport(form) {
@@ -183,8 +254,13 @@ async function handlePdfExport(form) {
 
     const controller = new AbortController();
     const abortTimer = window.setTimeout(() => controller.abort(), PDF_FETCH_TIMEOUT_MS);
+    let reachedResponse = false;
 
     try {
+        if (pdfExportDebugEnabled()) {
+            console.debug('[pdf-export] submit', method, form.action);
+        }
+
         const fetchInit = {
             credentials: 'same-origin',
             signal: controller.signal,
@@ -222,6 +298,7 @@ async function handlePdfExport(form) {
             });
         }
 
+        reachedResponse = true;
         window.clearTimeout(abortTimer);
 
         const ct = (res.headers.get('Content-Type') || '').toLowerCase();
@@ -230,14 +307,33 @@ async function handlePdfExport(form) {
             const json = await res.json();
 
             if (!res.ok) {
-                throw new Error(json.message || `Server responded with ${res.status}`);
+                let msg = json.message || json.error || `Server responded with ${res.status}`;
+                if (json.errors && typeof json.errors === 'object') {
+                    const flat = Object.values(json.errors).flat();
+                    if (flat.length > 0 && typeof flat[0] === 'string') {
+                        msg = flat[0];
+                    }
+                }
+                throw new Error(msg);
             }
 
             const data = json.data ?? {};
-            const statusUrl = data.status_url || json.status_url;
-            const isAsync = data.async === true || json.async === true;
 
-            if (isAsync && statusUrl) {
+            if (data.download_url && data.status === 'completed') {
+                window.location.assign(data.download_url);
+                return;
+            }
+
+            const statusUrl = data.status_url || json.status_url;
+            const needsPoll =
+                Boolean(statusUrl) &&
+                (data.async === true ||
+                    json.async === true ||
+                    res.status === 202 ||
+                    data.status === 'queued' ||
+                    data.status === 'processing');
+
+            if (needsPoll) {
                 buttons.forEach((btn) => {
                     if (btn.tagName === 'BUTTON') {
                         btn.setAttribute('data-loading-text', 'Preparing export…');
@@ -249,7 +345,7 @@ async function handlePdfExport(form) {
                 return;
             }
 
-            throw new Error('Unexpected JSON response from export.');
+            throw new Error(data.message || json.message || 'Unexpected JSON response from export.');
         }
 
         if (!res.ok) {
@@ -262,20 +358,27 @@ async function handlePdfExport(form) {
         }
 
         const blob = await res.blob();
-        const disposition = res.headers.get('Content-Disposition') || '';
-        const filename = parseFilenameFromContentDisposition(disposition);
 
-        const blobUrl = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = blobUrl;
-        a.download = filename;
-        a.rel = 'noopener';
-        document.body.appendChild(a);
-        a.click();
-        a.remove();
-        window.setTimeout(() => URL.revokeObjectURL(blobUrl), 60000);
+        const blobUrl = window.URL.createObjectURL(blob);
+        // Avoid `noopener` in the window.open features string: in Chromium it returns `null` even when
+        // a new tab opened, which incorrectly triggered `location.assign` and navigated THIS tab too.
+        const newWin = window.open(blobUrl, '_blank');
+        if (newWin) {
+            try {
+                newWin.opener = null;
+            } catch (e) {
+                /* ignore */
+            }
+        } else {
+            // Popup blocked: same-tab fallback only when no window was created.
+            window.location.assign(blobUrl);
+        }
+        // Revoke after the viewer has time to read the blob (avoid revoking while a new tab loads).
+        window.setTimeout(() => window.URL.revokeObjectURL(blobUrl), 600000);
     } catch (err) {
-        window.clearTimeout(abortTimer);
+        if (!reachedResponse) {
+            window.clearTimeout(abortTimer);
+        }
         if (err?.name === 'AbortError') {
             window.alert('PDF export timed out. Please try again with fewer filters or a smaller scope.');
         } else {

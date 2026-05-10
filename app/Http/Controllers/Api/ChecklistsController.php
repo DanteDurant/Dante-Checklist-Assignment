@@ -6,6 +6,7 @@ use App\Application\Assessments\Services\ChecklistCompletionService;
 use App\Application\Reporting\Queries\ChecklistInstanceReportQuery;
 use App\Enums\ChecklistQuestionType;
 use App\Http\Controllers\Api\Concerns\ApiResponses;
+use App\Http\Controllers\Concerns\ResolvesPerPage;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\Checklists\SaveDraftRequest;
 use App\Http\Requests\Api\Checklists\StartChecklistRequest;
@@ -22,27 +23,30 @@ use Illuminate\Validation\ValidationException;
 class ChecklistsController extends Controller
 {
     use ApiResponses;
+    use ResolvesPerPage;
 
     public function __construct(
         private readonly ChecklistCompletionService $service,
         private readonly ChecklistInstanceReportQuery $reportQuery,
-    ) {
-    }
+    ) {}
 
     public function index(Request $request): JsonResponse
     {
         // Auditor lists their own instances.
-        if (!($request->user()?->hasRole('auditor'))) {
+        if (! ($request->user()?->hasRole('auditor'))) {
             abort(403);
         }
 
-        $perPage = (int) $request->integer('per_page', 15);
-        $perPage = max(1, min($perPage, 100));
+        $perPage = $this->resolvePerPage($request);
+        $search = $request->input('search');
 
         $paginator = ChecklistInstance::query()
             ->where('auditor_id', $request->user()->id)
+            ->when(is_string($search) && trim($search) !== '', fn ($q) => $q->search($search))
+            ->with(['template:id,name'])
             ->latest('id')
-            ->paginate($perPage);
+            ->paginate($perPage)
+            ->withQueryString();
 
         return $this->success([
             'items' => ChecklistInstanceResource::collection($paginator->items())->resolve(),
@@ -98,7 +102,7 @@ class ChecklistsController extends Controller
     }
 
     /**
-     * @param array<int|string, mixed> $rawAnswers
+     * @param  array<int|string, mixed>  $rawAnswers
      * @return array<int, array{question_id:int, value:mixed}>
      */
     private function buildAnswersPayload(ChecklistInstance $instance, array $rawAnswers): array
@@ -114,7 +118,7 @@ class ChecklistsController extends Controller
         foreach ($rawAnswers as $questionId => $rawValue) {
             $questionId = (int) $questionId;
             $question = $questions->get($questionId);
-            if (!$question) {
+            if (! $question) {
                 continue;
             }
 
@@ -168,4 +172,3 @@ class ChecklistsController extends Controller
         ]);
     }
 }
-

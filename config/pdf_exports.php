@@ -42,4 +42,27 @@ return [
     /** Dedupe window: identical queued/processing exports within seconds reuse one job */
     'dedupe_ttl_seconds' => (int) env('PDF_EXPORT_DEDUPE_TTL_SECONDS', 600),
 
+    /*
+    |--------------------------------------------------------------------------
+    | Compliance snapshot: avoid queue in local/dev
+    |--------------------------------------------------------------------------
+    |
+    | When set to an integer, portfolio/compliance snapshot PDFs run synchronously
+    | (no queue worker) as long as filtered instance count is at or below this cap.
+    |
+    | Default: 25_000 when APP_ENV=local so `php artisan queue:work` is not required for
+    | dashboard exports. Set PDF_SNAPSHOT_FORCE_SYNC_MAX_INSTANCES=0 in .env to disable
+    | (always use queue thresholds). In production, omit the env var (null) to use
+    | sync_max_snapshot_instances / queue rules only.
+    |
+    */
+
+    'compliance_snapshot_force_sync_max_instances' => env(
+        'PDF_SNAPSHOT_FORCE_SYNC_MAX_INSTANCES',
+        in_array(env('APP_ENV'), ['local'], true) ? 25000 : null,
+    ),
+
+    /** Log export lifecycle (enqueue, job start/complete) to default log channel */
+    'log_lifecycle' => (bool) env('PDF_EXPORT_LOG_LIFECYCLE', true),
+
 ];

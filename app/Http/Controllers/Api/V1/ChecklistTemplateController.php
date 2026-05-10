@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api\V1;
 
 use App\Application\ChecklistTemplates\Services\ChecklistTemplateService;
+use App\Http\Controllers\Concerns\ResolvesPerPage;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\V1\ChecklistTemplates\StoreChecklistTemplateRequest;
 use App\Http\Requests\Api\V1\ChecklistTemplates\UpdateChecklistTemplateRequest;
@@ -13,18 +14,18 @@ use Illuminate\Http\Request;
 
 class ChecklistTemplateController extends Controller
 {
-    public function __construct(private readonly ChecklistTemplateService $service)
-    {
-    }
+    use ResolvesPerPage;
+
+    public function __construct(private readonly ChecklistTemplateService $service) {}
 
     public function index(Request $request): JsonResponse
     {
         $this->authorize('viewAny', ChecklistTemplate::class);
 
-        $perPage = (int) $request->integer('per_page', 15);
-        $perPage = max(1, min($perPage, 100));
+        $perPage = $this->resolvePerPage($request);
+        $search = $request->input('search');
 
-        $paginator = $this->service->paginate($perPage);
+        $paginator = $this->service->paginate($perPage, is_string($search) ? $search : null);
 
         return response()->json([
             'data' => ChecklistTemplateResource::collection($paginator->items()),
@@ -67,4 +68,3 @@ class ChecklistTemplateController extends Controller
         return response()->json([], 204);
     }
 }
-

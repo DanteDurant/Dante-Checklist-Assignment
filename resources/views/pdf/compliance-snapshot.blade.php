@@ -41,7 +41,7 @@
         <tbody>
         @forelse ($byStatus ?? [] as $st => $c)
             <tr>
-                <td>{{ \App\Enums\ChecklistInstanceStatus::tryFrom((string) $st)?->label() ?? (string) $st }}</td>
+                <td class="cell-status"><span class="status-pill">{{ \App\Enums\ChecklistInstanceStatus::tryFrom((string) $st)?->label() ?? (string) $st }}</span></td>
                 <td class="right">{{ $c }}</td>
             </tr>
         @empty
@@ -87,7 +87,7 @@
                     <td>{{ \Illuminate\Support\Str::limit($row->template?->name ?? '—', 70) }}</td>
                     <td>{{ \Illuminate\Support\Str::limit($row->auditor?->name ?? '—', 40) }}</td>
                     <td>{{ optional($row->submitted_at)->format('Y-m-d H:i') ?? '—' }}</td>
-                    <td>{{ $row->status->label() }}</td>
+                    <td class="cell-status"><span class="status-pill">{{ $row->status->label() }}</span></td>
                 </tr>
             @endforeach
             </tbody>

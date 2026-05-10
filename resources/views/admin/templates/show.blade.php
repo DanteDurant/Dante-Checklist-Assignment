@@ -3,7 +3,7 @@
         <div class="text-sm leading-relaxed text-ui-fg-muted">
             <span class="font-semibold text-ui-fg">Status:</span> <x-ui.status-badge :status="$template->status" />
             <span class="mx-2 text-ui-fg-subtle" aria-hidden="true">·</span>
-            <span class="font-semibold text-ui-fg">Questions:</span> {{ $template->questions->count() }}
+            <span class="font-semibold text-ui-fg">Questions:</span> {{ $template->questions_count }}
         </div>
         <div class="flex w-full flex-col gap-2 sm:w-auto sm:max-w-md sm:items-stretch">
             <div class="flex flex-wrap gap-2 sm:justify-end">
@@ -51,8 +51,23 @@
 
             <div class="mt-6">
                 <x-ui.card title="Questions" description="Ordered by sort order.">
+                    <form method="GET" action="{{ route('admin.templates.show', $template) }}" class="mb-4 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-end sm:justify-between">
+                        <div class="min-w-0 flex-1 sm:max-w-md">
+                            <label for="question-search" class="mb-1 block text-xs font-semibold uppercase tracking-wider text-ui-fg-subtle">Search questions</label>
+                            <div class="flex gap-2">
+                                <input id="question-search" name="search" type="search" value="{{ old('search', $search ?? '') }}" autocomplete="off"
+                                       placeholder="Question text…"
+                                       class="block w-full rounded-lg border border-ui-fill-border bg-ui-canvas px-3 py-2 text-sm text-ui-fg shadow-ui-sm placeholder:text-ui-fg-subtle focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ui-ring focus-visible:ring-offset-2 focus-visible:ring-offset-ui-canvas dark:bg-ui-surface" />
+                                @if(request()->filled('search'))
+                                    <x-ui.button variant="secondary" :href="route('admin.templates.show', $template)">Clear</x-ui.button>
+                                @endif
+                            </div>
+                        </div>
+                        <x-ui.button type="submit" variant="secondary" data-loading-text="Searching…">Apply</x-ui.button>
+                    </form>
+
                     <div class="space-y-3 sm:hidden">
-                        @forelse ($template->questions as $q)
+                        @forelse ($questions as $q)
                             <x-ui.card>
                                 <div class="flex items-start justify-between gap-4">
                                     <div class="min-w-0">
@@ -82,13 +97,16 @@
                                 </div>
                             </x-ui.card>
                         @empty
-                            <x-ui.empty-state title="No questions yet" message="Add your first question using the form on the right." />
+                            <x-ui.empty-state
+                                title="{{ request()->filled('search') ? 'No matching questions' : 'No questions yet' }}"
+                                message="{{ request()->filled('search') ? 'Try another search or clear filters.' : 'Add your first question using the form on the right.' }}"
+                            />
                         @endforelse
                     </div>
 
                     <div class="hidden sm:block">
                         <x-ui.table :headers="['Sort', 'Question', 'Type', 'Required', 'Actions']">
-                            @forelse ($template->questions as $q)
+                            @forelse ($questions as $q)
                                 <tr>
                                     <td class="px-4 py-3 text-sm tabular-nums text-ui-fg-muted">{{ $q->sort_order }}</td>
                                     <td class="px-4 py-3 text-sm font-medium text-ui-fg">{{ $q->label }}</td>
@@ -107,11 +125,18 @@
                             @empty
                                 <tr>
                                     <td colspan="5" class="px-4 py-6">
-                                        <x-ui.empty-state title="No questions yet" message="Add your first question using the form on the right." />
+                                        <x-ui.empty-state
+                                            title="{{ request()->filled('search') ? 'No matching questions' : 'No questions yet' }}"
+                                            message="{{ request()->filled('search') ? 'Try another search or clear filters.' : 'Add your first question using the form on the right.' }}"
+                                        />
                                     </td>
                                 </tr>
                             @endforelse
                         </x-ui.table>
+                    </div>
+
+                    <div class="mt-6 border-t border-ui-border pt-5">
+                        {{ $questions->links() }}
                     </div>
                 </x-ui.card>
             </div>

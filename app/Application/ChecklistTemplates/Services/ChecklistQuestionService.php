@@ -11,21 +11,26 @@ use Illuminate\Support\Str;
 
 class ChecklistQuestionService
 {
-    public function paginate(ChecklistTemplate $template, int $perPage = 50): LengthAwarePaginator
+    public function paginate(ChecklistTemplate $template, int $perPage = 50, ?string $search = null): LengthAwarePaginator
     {
-        return $template->questions()
+        $query = $template->questions()
             ->orderBy('sort_order')
-            ->orderBy('id')
-            ->paginate($perPage);
+            ->orderBy('id');
+
+        if (trim((string) $search) !== '') {
+            $query->search($search);
+        }
+
+        return $query->paginate($perPage)->withQueryString();
     }
 
     /**
-     * @param array{question_text:string, answer_type:string, required?:bool, sort_order?:int, options?:array<int, array{value:string,label:string}>|null} $data
+     * @param  array{question_text:string, answer_type:string, required?:bool, sort_order?:int, options?:array<int, array{value:string,label:string}>|null}  $data
      */
     public function create(ChecklistTemplate $template, array $data): ChecklistQuestion
     {
         return DB::transaction(function () use ($template, $data) {
-            $question = new ChecklistQuestion();
+            $question = new ChecklistQuestion;
             $question->checklist_template_id = $template->id;
             $question->key = Str::snake(Str::limit($data['question_text'], 40, ''));
             $question->label = $data['question_text'];
@@ -41,7 +46,7 @@ class ChecklistQuestionService
     }
 
     /**
-     * @param array{question_text?:string, answer_type?:string, required?:bool, sort_order?:int, options?:array<int, array{value:string,label:string}>|null} $data
+     * @param  array{question_text?:string, answer_type?:string, required?:bool, sort_order?:int, options?:array<int, array{value:string,label:string}>|null}  $data
      */
     public function update(ChecklistQuestion $question, array $data): ChecklistQuestion
     {
@@ -77,4 +82,3 @@ class ChecklistQuestionService
         $question->delete();
     }
 }
-

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Web\Admin;
 
+use App\Application\ChecklistTemplates\Services\ChecklistQuestionService;
 use App\Application\ChecklistTemplates\Services\ChecklistTemplateService;
 use App\Enums\ChecklistTemplateStatus;
 use App\Http\Controllers\Controller;
@@ -9,25 +10,29 @@ use App\Models\ChecklistTemplate;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rules\Enum;
+use Illuminate\View\View;
 
 class ChecklistTemplateController extends Controller
 {
-    public function __construct(private readonly ChecklistTemplateService $service)
-    {
-    }
+    public function __construct(
+        private readonly ChecklistTemplateService $service,
+        private readonly ChecklistQuestionService $questionService,
+    ) {}
 
-    public function index(Request $request): \Illuminate\View\View
+    public function index(Request $request): View
     {
-        $perPage = max(1, min((int) $request->integer('per_page', 15), 100));
+        $perPage = max(1, min((int) $request->integer('per_page', (int) config('list.default_per_page', 15)), (int) config('list.max_per_page', 100)));
+        $search = $request->string('search')->toString();
 
-        $templates = $this->service->paginate($perPage);
+        $templates = $this->service->paginate($perPage, $search);
 
         return view('admin.templates.index', [
             'templates' => $templates,
+            'search' => $search,
         ]);
     }
 
-    public function create(): \Illuminate\View\View
+    public function create(): View
     {
         return view('admin.templates.create', [
             'statuses' => ChecklistTemplateStatus::cases(),
@@ -49,16 +54,24 @@ class ChecklistTemplateController extends Controller
             ->with('status', 'Template created.');
     }
 
-    public function show(ChecklistTemplate $template): \Illuminate\View\View
+    public function show(Request $request, ChecklistTemplate $template): View
     {
-        $template->load(['questions' => fn ($q) => $q->orderBy('sort_order')->orderBy('id')]);
+        $maxQuestions = (int) config('list.max_per_page_questions', 200);
+        $perPage = max(1, min((int) $request->integer('per_page', (int) config('list.default_per_page', 15)), $maxQuestions));
+        $search = $request->string('search')->toString();
+
+        $template->loadCount('questions');
+
+        $questions = $this->questionService->paginate($template, $perPage, $search);
 
         return view('admin.templates.show', [
             'template' => $template,
+            'questions' => $questions,
+            'search' => $search,
         ]);
     }
 
-    public function edit(ChecklistTemplate $template): \Illuminate\View\View
+    public function edit(ChecklistTemplate $template): View
     {
         return view('admin.templates.edit', [
             'template' => $template,
@@ -90,4 +103,3 @@ class ChecklistTemplateController extends Controller
             ->with('status', 'Template deleted.');
     }
 }
-

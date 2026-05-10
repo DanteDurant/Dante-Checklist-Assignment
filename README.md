@@ -180,17 +180,37 @@ Evaluator docs:
 
 ### PDF exports and queue workers
 
-Exports may return a PDF immediately (**synchronous**) or enqueue a background job (**asynchronous**) depending on dataset size and settings in `config/pdf_exports.php`.
+Exports may return a PDF immediately (**synchronous**) or enqueue a background job (**asynchronous**) depending on dataset size and settings in **`config/pdf_exports.php`**.
 
-- **Evaluator quick check:** use Postman **Exports (PDF System)** after logging in. If responses stay **`queued`**, start a worker in a second terminal:
+**Admin “Portfolio PDF snapshot” (Compliance snapshot)** historically queued when filtered instance counts were high; without a worker the UI polled forever. **`APP_ENV=local`** now defaults **`PDF_SNAPSHOT_FORCE_SYNC_MAX_INSTANCES=25000`** (via config) so the dashboard snapshot is generated **inline** up to that cap — **no `queue:work` required** on a typical laptop database. Tune with:
+
+```env
+# Omit for production (use queue thresholds). In local dev, omit to keep the safe default sync cap.
+PDF_SNAPSHOT_FORCE_SYNC_MAX_INSTANCES=25000
+# Disable inline snapshot (always use queue rules): set to 0
+PDF_SNAPSHOT_FORCE_SYNC_MAX_INSTANCES=0
+
+# Quiet export lifecycle logs in production if desired:
+# PDF_EXPORT_LOG_LIFECYCLE=false
+```
+
+**Production / large snapshots:** install a persistent worker:
 
 ```bash
 php artisan queue:work
 ```
 
-- Ensure `.env` has `QUEUE_CONNECTION=database` (default in `.env.example`) and run `php artisan migrate` so the `jobs` table exists.
+- Ensure `.env` has `QUEUE_CONNECTION=database` when using the database driver, and run `php artisan migrate` so the **`jobs`** and **`failed_jobs`** tables exist.
 
-Full behavior, request/response examples, and status meanings are documented in **`docs/api.md`**.
+**Debugging stuck exports:** check **`storage/logs/laravel.log`** for `pdf_export.*` lines (`pdf_export.job.start`, `pdf_export.job.completed`, `pdf_export.enqueue.dispatched`, etc.). In the browser DevTools console, enable client tracing with:
+
+```js
+localStorage.setItem('PDF_EXPORT_DEBUG', '1');
+```
+
+Reload, retry export, then inspect `[pdf-export]` messages.
+
+Full behavior and API examples are in **`docs/api.md`**.
 
 ### Stable external API (`/api/*`)
 

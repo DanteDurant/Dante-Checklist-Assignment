@@ -75,7 +75,7 @@
                     <td class="mono muted">{{ $i->public_id }}</td>
                     <td>{{ \Illuminate\Support\Str::limit($i->template?->name ?? '—', 56) }}</td>
                     <td>{{ \Illuminate\Support\Str::limit($i->auditor?->name ?? '—', 36) }}</td>
-                    <td>{{ $i->status->label() }}</td>
+                    <td class="cell-status"><span class="status-pill">{{ $i->status->label() }}</span></td>
                     <td>{{ optional($i->updated_at)->format('Y-m-d H:i') ?? '—' }}</td>
                 </tr>
             @endforeach

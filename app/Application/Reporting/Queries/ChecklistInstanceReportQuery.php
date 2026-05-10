@@ -4,6 +4,7 @@ namespace App\Application\Reporting\Queries;
 
 use App\Enums\ChecklistInstanceStatus;
 use App\Models\ChecklistInstance;
+use App\Support\Search\LikePattern;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
@@ -22,6 +23,7 @@ class ChecklistInstanceReportQuery
      *   template_id?: int|null,
      *   auditor_id?: int|null,
      *   q?: string|null,
+     *   search?: string|null,
      *   per_page?: int|null
      * } $filters
      */
@@ -107,19 +109,18 @@ class ChecklistInstanceReportQuery
             $query->where('submitted_at', '<=', $filters['date_to']);
         }
 
-        if (! empty($filters['q'])) {
-            $needle = trim((string) $filters['q']);
-
-            if ($needle !== '') {
-                // Search strategy: match auditor name/email or template name.
-                $query->where(function (Builder $q) use ($needle) {
-                    $q->whereHas('auditor', function (Builder $auditor) use ($needle) {
+        $searchTerm = trim((string) ($filters['q'] ?? $filters['search'] ?? ''));
+        if ($searchTerm !== '') {
+            $pattern = LikePattern::wrap($searchTerm);
+            if ($pattern !== null) {
+                $query->where(function (Builder $q) use ($pattern) {
+                    $q->whereHas('auditor', function (Builder $auditor) use ($pattern) {
                         $auditor
-                            ->where('name', 'like', "%{$needle}%")
-                            ->orWhere('email', 'like', "%{$needle}%");
-                    })->orWhereHas('template', function (Builder $template) use ($needle) {
-                        $template->where('name', 'like', "%{$needle}%");
-                    });
+                            ->where('name', 'like', $pattern)
+                            ->orWhere('email', 'like', $pattern);
+                    })->orWhereHas('template', function (Builder $template) use ($pattern) {
+                        $template->where('name', 'like', $pattern);
+                    })->orWhere('status', 'like', $pattern);
                 });
             }
         }

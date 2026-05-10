@@ -42,6 +42,13 @@ final class GenerateStoredPdfExportJob implements ShouldQueue
             return;
         }
 
+        if (config('pdf_exports.log_lifecycle', true)) {
+            Log::info('pdf_export.job.start', [
+                'export_id' => $export->id,
+                'type' => $export->export_type->value,
+            ]);
+        }
+
         $export->forceFill([
             'status' => ExportStatus::Processing,
             'started_at' => $export->started_at ?? now(),
@@ -67,6 +74,13 @@ final class GenerateStoredPdfExportJob implements ShouldQueue
             'completed_at' => now(),
             'error_message' => null,
         ])->save();
+
+        if (config('pdf_exports.log_lifecycle', true)) {
+            Log::info('pdf_export.job.completed', [
+                'export_id' => $export->id,
+                'type' => $export->export_type->value,
+            ]);
+        }
     }
 
     public function failed(?Throwable $exception): void

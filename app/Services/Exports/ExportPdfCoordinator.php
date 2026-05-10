@@ -15,6 +15,8 @@ use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\URL;
 use Illuminate\Validation\Rule;
 use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 
@@ -114,8 +116,31 @@ final class ExportPdfCoordinator
             $filters['date_to'] ?? null,
         );
 
-        if ($this->decision->shouldQueueComplianceSnapshot($instanceCount, $detail)) {
+        $queueSnapshot = $this->decision->shouldQueueComplianceSnapshot($instanceCount, $detail);
+
+        $forceSyncMax = config('pdf_exports.compliance_snapshot_force_sync_max_instances');
+        if ($forceSyncMax !== null && (int) $forceSyncMax !== 0 && $instanceCount <= (int) $forceSyncMax) {
+            $queueSnapshot = false;
+        }
+
+        if ($queueSnapshot) {
+            if (config('pdf_exports.log_lifecycle', true)) {
+                Log::info('pdf_export.compliance_snapshot.queued', [
+                    'user_id' => $request->user()?->id,
+                    'instance_count' => $instanceCount,
+                    'detail' => $detail->value,
+                ]);
+            }
+
             return $this->queuedJson($request->user(), ExportType::ComplianceSnapshot, $filters);
+        }
+
+        if (config('pdf_exports.log_lifecycle', true)) {
+            Log::info('pdf_export.compliance_snapshot.sync', [
+                'user_id' => $request->user()?->id,
+                'instance_count' => $instanceCount,
+                'detail' => $detail->value,
+            ]);
         }
 
         $doc = $this->documents->documentForComplianceSnapshot($filters);
@@ -261,7 +286,14 @@ final class ExportPdfCoordinator
             $filters['date_to'] ?? null,
         );
 
-        if ($this->decision->shouldQueueComplianceSnapshot($instanceCount, $detail)) {
+        $queueSnapshot = $this->decision->shouldQueueComplianceSnapshot($instanceCount, $detail);
+
+        $forceSyncMax = config('pdf_exports.compliance_snapshot_force_sync_max_instances');
+        if ($forceSyncMax !== null && (int) $forceSyncMax !== 0 && $instanceCount <= (int) $forceSyncMax) {
+            $queueSnapshot = false;
+        }
+
+        if ($queueSnapshot) {
             return $this->queuedJson($user, ExportType::ComplianceSnapshot, $filters);
         }
 
@@ -322,6 +354,41 @@ final class ExportPdfCoordinator
     private function queuedJson(User $user, ExportType $type, array $filters): JsonResponse
     {
         $export = $this->enqueue($user, $type, $filters);
+        $export->refresh();
+
+        // Sync queue driver runs the job before this response is built — skip polling when already done.
+        if ($export->status === ExportStatus::Completed && $export->hasStoredFile()) {
+            if (config('pdf_exports.log_lifecycle', true)) {
+                Log::info('pdf_export.queued_json.immediate_complete', [
+                    'export_id' => $export->id,
+                    'type' => $type->value,
+                ]);
+            }
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Export ready.',
+                'data' => [
+                    'async' => false,
+                    'export_uuid' => $export->uuid,
+                    'status' => $export->status->value,
+                    'download_url' => URL::temporarySignedRoute(
+                        'exports.download',
+                        now()->addHour(),
+                        ['export' => $export->uuid],
+                    ),
+                    'status_url' => route('exports.status', $export),
+                ],
+            ]);
+        }
+
+        if (config('pdf_exports.log_lifecycle', true)) {
+            Log::info('pdf_export.queued_json.poll_required', [
+                'export_id' => $export->id,
+                'type' => $type->value,
+                'status' => $export->status->value,
+            ]);
+        }
 
         return response()->json([
             'success' => true,
@@ -344,6 +411,14 @@ final class ExportPdfCoordinator
         $existing = $this->findRecentDuplicate($user, $hash);
 
         if ($existing !== null) {
+            if (config('pdf_exports.log_lifecycle', true)) {
+                Log::info('pdf_export.enqueue.deduped', [
+                    'export_id' => $existing->id,
+                    'type' => $type->value,
+                    'status' => $existing->status->value,
+                ]);
+            }
+
             return $existing;
         }
 
@@ -359,6 +434,14 @@ final class ExportPdfCoordinator
         ]);
 
         GenerateStoredPdfExportJob::dispatch($export->id);
+
+        if (config('pdf_exports.log_lifecycle', true)) {
+            Log::info('pdf_export.enqueue.dispatched', [
+                'export_id' => $export->id,
+                'type' => $type->value,
+                'queue' => config('queue.default'),
+            ]);
+        }
 
         return $export;
     }

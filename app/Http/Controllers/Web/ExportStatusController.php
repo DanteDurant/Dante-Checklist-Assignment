@@ -20,6 +20,7 @@ final class ExportStatusController extends Controller
             'status' => $export->status->value,
             'export_type' => $export->export_type->value,
             'created_at' => $export->created_at?->toIso8601String(),
+            'started_at' => $export->started_at?->toIso8601String(),
             'completed_at' => $export->completed_at?->toIso8601String(),
             'filename' => $export->original_filename,
             'download_url' => null,

@@ -13,6 +13,13 @@ class ChecklistInstanceReportRequest extends FormRequest
         return $this->user()?->hasRole('admin') ?? false;
     }
 
+    protected function prepareForValidation(): void
+    {
+        if ($this->filled('search') && ! $this->filled('q')) {
+            $this->merge(['q' => $this->input('search')]);
+        }
+    }
+
     public function rules(): array
     {
         return [
@@ -21,6 +28,7 @@ class ChecklistInstanceReportRequest extends FormRequest
             'template_id' => ['nullable', 'integer', 'exists:checklist_templates,id'],
             'auditor_id' => ['nullable', 'integer', 'exists:users,id'],
             'q' => ['nullable', 'string', 'max:255'],
+            'search' => ['nullable', 'string', 'max:255'],
             'per_page' => ['nullable', 'integer', 'min:1', 'max:100'],
             'detail' => ['nullable', 'string', Rule::in(array_column(ExportDetailLevel::cases(), 'value'))],
         ];

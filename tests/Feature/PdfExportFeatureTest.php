@@ -238,4 +238,19 @@ class PdfExportFeatureTest extends TestCase
 
         Queue::assertPushed(GenerateStoredPdfExportJob::class);
     }
+
+    public function test_admin_dashboard_portfolio_snapshot_returns_pdf_when_force_sync_override_applies(): void
+    {
+        config(['pdf_exports.sync_max_snapshot_instances' => -2]);
+        config(['pdf_exports.compliance_snapshot_force_sync_max_instances' => 99_999]);
+
+        $admin = User::factory()->create()->assignRole('admin');
+
+        $res = $this->actingAs($admin)
+            ->post(route('admin.dashboard.export_pdf'), ['detail' => 'standard']);
+
+        $res->assertOk();
+        $ct = strtolower((string) $res->headers->get('content-type'));
+        $this->assertStringContainsString('application/pdf', $ct);
+    }
 }

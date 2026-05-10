@@ -12,21 +12,23 @@ use Illuminate\Support\Str;
 
 class ChecklistTemplateService
 {
-    public function paginate(int $perPage = 15): LengthAwarePaginator
+    public function paginate(int $perPage = 15, ?string $search = null): LengthAwarePaginator
     {
         return ChecklistTemplate::query()
             ->withCount('questions')
+            ->when(trim((string) $search) !== '', fn (Builder $q) => $q->search($search))
             ->latest('id')
-            ->paginate($perPage);
+            ->paginate($perPage)
+            ->withQueryString();
     }
 
     /**
-     * @param array{title:string, description?:string|null, status:string} $data
+     * @param  array{title:string, description?:string|null, status:string}  $data
      */
     public function create(array $data, User $actor): ChecklistTemplate
     {
         return DB::transaction(function () use ($data, $actor) {
-            $template = new ChecklistTemplate();
+            $template = new ChecklistTemplate;
             $template->public_id = (string) Str::ulid();
             $template->name = $data['title'];
             $template->description = $data['description'] ?? null;
@@ -48,7 +50,7 @@ class ChecklistTemplateService
     }
 
     /**
-     * @param array{title?:string, description?:string|null, status?:string} $data
+     * @param  array{title?:string, description?:string|null, status?:string}  $data
      */
     public function update(ChecklistTemplate $template, array $data): ChecklistTemplate
     {
@@ -65,11 +67,11 @@ class ChecklistTemplateService
                 $next = ChecklistTemplateStatus::from($data['status']);
                 $template->status = $next;
 
-                if ($next === ChecklistTemplateStatus::Published && !$template->published_at) {
+                if ($next === ChecklistTemplateStatus::Published && ! $template->published_at) {
                     $template->published_at = now();
                 }
 
-                if ($next === ChecklistTemplateStatus::Archived && !$template->archived_at) {
+                if ($next === ChecklistTemplateStatus::Archived && ! $template->archived_at) {
                     $template->archived_at = now();
                 }
             }
@@ -86,4 +88,3 @@ class ChecklistTemplateService
         $template->delete();
     }
 }
-

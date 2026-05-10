@@ -9,6 +9,23 @@
     </div>
 
     <div class="mt-6">
+        <form method="GET" action="{{ route('admin.templates.index') }}" class="mb-4 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-end sm:justify-between">
+            <div class="min-w-0 flex-1 sm:max-w-md">
+                <label for="template-search" class="mb-1 block text-xs font-semibold uppercase tracking-wider text-ui-fg-subtle">Search templates</label>
+                <div class="flex gap-2">
+                    <input id="template-search" name="search" type="search" value="{{ old('search', $search ?? '') }}" autocomplete="off"
+                           placeholder="Title or description…"
+                           class="block w-full rounded-lg border border-ui-fill-border bg-ui-canvas px-3 py-2 text-sm text-ui-fg shadow-ui-sm placeholder:text-ui-fg-subtle focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ui-ring focus-visible:ring-offset-2 focus-visible:ring-offset-ui-canvas dark:bg-ui-surface" />
+                    @if(request()->filled('search'))
+                        <x-ui.button variant="secondary" :href="route('admin.templates.index')">Clear</x-ui.button>
+                    @endif
+                </div>
+            </div>
+            <div class="flex gap-2">
+                <x-ui.button type="submit" data-loading-text="Searching…">Search</x-ui.button>
+            </div>
+        </form>
+
         <div class="space-y-3 sm:hidden">
             @forelse ($templates as $t)
                 <x-ui.card>
@@ -42,8 +59,13 @@
                     </div>
                 </x-ui.card>
             @empty
-                <x-ui.empty-state title="No templates yet" message="Create your first checklist template to get started.">
-                    <x-ui.button :href="route('admin.templates.create')">New template</x-ui.button>
+                <x-ui.empty-state
+                    title="{{ request()->filled('search') ? 'No matching templates' : 'No templates yet' }}"
+                    message="{{ request()->filled('search') ? 'Try a different search or clear filters.' : 'Create your first checklist template to get started.' }}"
+                >
+                    @unless(request()->filled('search'))
+                        <x-ui.button :href="route('admin.templates.create')">New template</x-ui.button>
+                    @endunless
                 </x-ui.empty-state>
             @endforelse
         </div>
@@ -75,8 +97,13 @@
                 @empty
                     <tr>
                         <td colspan="5" class="px-4 py-6">
-                            <x-ui.empty-state title="No templates yet" message="Create your first checklist template to get started.">
-                                <x-ui.button :href="route('admin.templates.create')">New template</x-ui.button>
+                            <x-ui.empty-state
+                                title="{{ request()->filled('search') ? 'No matching templates' : 'No templates yet' }}"
+                                message="{{ request()->filled('search') ? 'Try a different search or clear filters.' : 'Create your first checklist template to get started.' }}"
+                            >
+                                @unless(request()->filled('search'))
+                                    <x-ui.button :href="route('admin.templates.create')">New template</x-ui.button>
+                                @endunless
                             </x-ui.empty-state>
                         </td>
                     </tr>

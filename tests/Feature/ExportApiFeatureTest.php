@@ -28,7 +28,13 @@ final class ExportApiFeatureTest extends TestCase
         $this->getJson('/api/exports')
             ->assertOk()
             ->assertJsonPath('success', true)
-            ->assertJsonCount(2, 'data.exports');
+            ->assertJsonCount(2, 'data.items')
+            ->assertJsonStructure([
+                'data' => [
+                    'items',
+                    'meta' => ['current_page', 'per_page', 'total', 'last_page'],
+                ],
+            ]);
     }
 
     public function test_auditor_cannot_view_another_users_export(): void

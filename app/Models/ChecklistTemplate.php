@@ -3,6 +3,8 @@
 namespace App\Models;
 
 use App\Enums\ChecklistTemplateStatus;
+use App\Support\Search\LikePattern;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -42,5 +44,17 @@ class ChecklistTemplate extends Model
     {
         return $this->hasMany(ChecklistInstance::class);
     }
-}
 
+    public function scopeSearch(Builder $query, ?string $term): Builder
+    {
+        $pattern = LikePattern::wrap($term);
+        if ($pattern === null) {
+            return $query;
+        }
+
+        return $query->where(function (Builder $q) use ($pattern) {
+            $q->where('name', 'like', $pattern)
+                ->orWhere('description', 'like', $pattern);
+        });
+    }
+}

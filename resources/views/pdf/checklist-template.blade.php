@@ -13,7 +13,7 @@
         <dt>Public ID</dt>
         <dd class="mono muted">{{ $template->public_id }}</dd>
         <dt>Status</dt>
-        <dd>{{ $template->status->label() }}</dd>
+        <dd><span class="status-pill status-pill-muted">{{ $template->status->label() }}</span></dd>
         @if ($template->description && $detailLevel !== \App\Enums\ExportDetailLevel::Summary)
             <dt>Description</dt>
             <dd>{{ Str::limit($template->description, $detailLevel === \App\Enums\ExportDetailLevel::Detailed ? 12000 : 4000) }}</dd>

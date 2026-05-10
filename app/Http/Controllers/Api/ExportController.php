@@ -5,9 +5,11 @@ namespace App\Http\Controllers\Api;
 use App\Enums\ExportDetailLevel;
 use App\Enums\ExportType;
 use App\Http\Controllers\Api\Concerns\ApiResponses;
+use App\Http\Controllers\Concerns\ResolvesPerPage;
 use App\Http\Controllers\Controller;
 use App\Models\Export;
 use App\Services\Exports\ExportPdfCoordinator;
+use App\Support\Search\LikePattern;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\URL;
@@ -17,6 +19,7 @@ use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 final class ExportController extends Controller
 {
     use ApiResponses;
+    use ResolvesPerPage;
 
     public function __construct(private readonly ExportPdfCoordinator $coordinator) {}
 
@@ -43,15 +46,39 @@ final class ExportController extends Controller
     {
         $this->authorize('viewAny', Export::class);
 
-        $query = Export::query()->orderByDesc('id')->limit(50);
+        $perPage = $this->resolvePerPage($request);
+        $search = $request->input('search');
+
+        $query = Export::query()->orderByDesc('id');
 
         if (! ($request->user()->hasRole('admin') && $request->boolean('all'))) {
             $query->where('user_id', $request->user()->id);
         }
 
-        $rows = $query->get()->map(fn (Export $e) => $this->exportSummary($e));
+        if (is_string($search) && trim($search) !== '') {
+            $pattern = LikePattern::wrap($search);
+            if ($pattern !== null) {
+                $query->where(function ($q) use ($pattern) {
+                    $q->where('export_type', 'like', $pattern)
+                        ->orWhere('status', 'like', $pattern)
+                        ->orWhere('original_filename', 'like', $pattern);
+                });
+            }
+        }
 
-        return $this->success(['exports' => $rows], 'OK');
+        $paginator = $query->paginate($perPage)->withQueryString();
+
+        $items = collect($paginator->items())->map(fn (Export $e) => $this->exportSummary($e))->values()->all();
+
+        return $this->success([
+            'items' => $items,
+            'meta' => [
+                'current_page' => $paginator->currentPage(),
+                'per_page' => $paginator->perPage(),
+                'total' => $paginator->total(),
+                'last_page' => $paginator->lastPage(),
+            ],
+        ], 'OK');
     }
 
     public function show(Request $request, Export $export): JsonResponse

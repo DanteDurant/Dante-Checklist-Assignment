@@ -4,8 +4,8 @@
      | Margins: use @page for consistent printable area; avoid double borders at block boundaries.
      */
     @page {
-        /* Generous printable margins — white space on all sides */
-        margin: 20mm 20mm 24mm 20mm;
+        /* Print margins — readable inset on all sides (compliance-style layout) */
+        margin: 24mm 26mm 28mm 26mm;
     }
 
     * {
@@ -24,8 +24,8 @@
         line-height: 1.5;
         color: #1a1a1a;
         margin: 0;
-        /* Bottom clearance for fixed footer; horizontal inset matches @page margins visually */
-        padding: 0 0 48px 0;
+        /* Bottom clearance for fixed footer */
+        padding: 6px 0 52px 0;
         border: 0;
         word-break: break-word;
         overflow-wrap: anywhere;
@@ -37,8 +37,8 @@
      */
     .pdf-header {
         width: 100%;
-        margin: 0 0 18px 0;
-        padding: 4px 0 16px 0;
+        margin: 0 0 22px 0;
+        padding: 8px 0 18px 0;
         border: 0;
         border-top: none;
         border-bottom: none;
@@ -85,7 +85,7 @@
         bottom: 0;
         left: 0;
         right: 0;
-        padding: 10px 20mm 4px 20mm;
+        padding: 10px 26mm 6px 26mm;
         margin: 0;
         font-size: 9px;
         line-height: 1.4;
@@ -126,11 +126,17 @@
         font-size: 10px;
         text-transform: uppercase;
         letter-spacing: 0.04em;
+        padding-top: 6px;
+        padding-bottom: 6px;
+        line-height: 1.35;
     }
 
     dl.meta-grid dd {
         margin-left: 150px;
-        margin-bottom: 6px;
+        margin-bottom: 10px;
+        padding-top: 5px;
+        padding-bottom: 5px;
+        line-height: 1.35;
         color: #0f172a;
     }
 
@@ -155,9 +161,14 @@
     }
 
     table.data-table td {
-        padding: 8px;
+        padding: 9px 10px;
         border: 1px solid #e2e8f0;
         vertical-align: top;
+    }
+
+    /* Status column + pills: center in row (DomPDF-safe; avoid flex) */
+    table.data-table td.cell-status {
+        vertical-align: middle;
     }
 
     tr { page-break-inside: avoid; }
@@ -253,12 +264,22 @@
 
     .status-pill {
         display: inline-block;
-        padding: 2px 8px;
+        vertical-align: middle;
+        padding: 5px 12px;
+        line-height: 1.35;
         border-radius: 999px;
         background: #e0f2fe;
         border: 1px solid #7dd3fc;
         font-weight: 700;
         font-size: 10px;
+        text-align: center;
+    }
+
+    /* Template lifecycle / neutral emphasis (published, draft, …) */
+    .status-pill-muted {
+        background: #f1f5f9;
+        border-color: #cbd5e1;
+        color: #334155;
     }
 
     .q-head { margin-bottom: 4px; }

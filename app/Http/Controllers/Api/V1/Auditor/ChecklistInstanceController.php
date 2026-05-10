@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api\V1\Auditor;
 
 use App\Application\Assessments\Services\ChecklistCompletionService;
+use App\Http\Controllers\Concerns\ResolvesPerPage;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\V1\Auditor\CompleteChecklistInstanceRequest;
 use App\Http\Requests\Api\V1\Auditor\SaveChecklistProgressRequest;
@@ -15,18 +16,23 @@ use Illuminate\Http\Request;
 
 class ChecklistInstanceController extends Controller
 {
-    public function __construct(private readonly ChecklistCompletionService $service)
-    {
-    }
+    use ResolvesPerPage;
+
+    public function __construct(private readonly ChecklistCompletionService $service) {}
 
     public function index(Request $request): JsonResponse
     {
         $user = $request->user();
+        $perPage = $this->resolvePerPage($request);
+        $search = $request->input('search');
 
         $instances = ChecklistInstance::query()
             ->where('auditor_id', $user->id)
+            ->when(is_string($search) && trim($search) !== '', fn ($q) => $q->search($search))
+            ->with(['template:id,name'])
             ->latest('id')
-            ->paginate(15);
+            ->paginate($perPage)
+            ->withQueryString();
 
         return response()->json([
             'data' => ChecklistInstanceResource::collection($instances->items()),
@@ -75,4 +81,3 @@ class ChecklistInstanceController extends Controller
         return new ChecklistInstanceResource($instance);
     }
 }
-
