@@ -56,6 +56,7 @@ services:
     networks:
       - checklist
 
+  # Requires `php artisan migrate` (jobs/failed_jobs tables) before async PDF jobs can run.
   queue:
     build:
       context: .

@@ -36,11 +36,11 @@ cp docker/env.docker.example .env
 # 1) Containers (`app` / `queue` read `.env` via env_file)
 docker compose up -d --build
 
-# 2) App key & dependencies
-docker compose exec app php artisan key:generate
+# 2) Dependencies & app key (`artisan` requires `vendor/`)
 docker compose exec app composer install
+docker compose exec app php artisan key:generate
 
-# 3) Database
+# 3) Database (creates `jobs`, `cache`, `sessions`, etc. — run before relying on the queue worker)
 docker compose exec app php artisan migrate --seed
 
 # 4) Frontend (production asset build — served by Vite-manifest from public/build)
@@ -56,7 +56,7 @@ Open **http://localhost:8080**. Seeded logins: **`admin@example.com` / `password
 
 ### Environment variables (Docker)
 
-- Copy **`docker/env.docker.example`** → **`.env`** (or merge DB / `APP_URL` / `SANCTUM_STATEFUL_DOMAINS` into `.env`).
+- Copy **`docker/env.docker.example`** → **`.env`** (or merge DB / `APP_URL` / `SANCTUM_STATEFUL_DOMAINS` into `.env`). Use **`DB_CONNECTION=mysql`** — do not keep **`DB_CONNECTION=sqlite`** from **`.env.example`** when running against the Compose MySQL service.
 - MySQL in Compose uses database **`laravel`**, user **`laravel`**, password **`laravel_secret`** (matches the example file). Change both **`.env`** and **`docker-compose.yml`** if you customize credentials.
 - Ports: **`DOCKER_WEB_PORT`** (default `8080`), **`DOCKER_MYSQL_PORT`** (default **`3307`** — avoids clashes with a host MySQL on 3306), **`DOCKER_VITE_PORT`** (default `5173`). Inside Compose, Laravel still uses **`DB_HOST=mysql`** and **`DB_PORT=3306`** (container port).
 
@@ -98,7 +98,8 @@ docker compose down               # stop; add -v to drop MySQL volume
 | **403 / CSRF / login issues** | Set **`APP_URL`** to the URL you use (**`http://localhost:8080`**) and widen **`SANCTUM_STATEFUL_DOMAINS`** |
 | **Permission errors on `storage/`** | `docker compose exec app chown -R www-data:www-data storage bootstrap/cache` |
 | **Blank page / no CSS** | Run **`npm run build`** inside **`app`**, or enable **`vite`** profile |
-| **Queued PDFs never finish** | Check **`queue`** logs; ensure migrations ran (`jobs` table). Run `docker compose restart queue` |
+| **Queued PDFs never finish** | Run **`migrate`** first so the **`jobs`** table exists; check **`queue`** logs. Run `docker compose restart queue` |
+| **`Class … not found` / `vendor` missing** | Run **`composer install`** in the **`app`** container before any **`php artisan`** command |
 | **Missing `vendor` / `node_modules`** | `docker compose exec app composer install` and `npm install` |
 | **Stale config** | `docker compose exec app php artisan config:clear` |
 | **`Unknown column 'deleted_at'`** / seeder fails | Run **`docker compose exec app php artisan migrate`** so **`2026_05_10_*_add_soft_deletes_to_checklist_templates`** applies (templates use soft deletes). |
