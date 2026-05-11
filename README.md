@@ -30,25 +30,25 @@ Config files live under **`docker/nginx/`** and **`docker/php/`**.
 From the **`checklist-assignment/`** directory (repository root that contains `artisan`):
 
 ```bash
-# 0) Environment (DB host, APP_URL, Sanctum domains — must match Compose)
-cp docker/env.docker.example .env
+# 0) Environment — copy template (`APP_KEY=` is intentional; see README “Environment variables”)
+cp .env.example .env
 
 # 1) Containers (`app` / `queue` read `.env` via env_file)
 docker compose up -d --build
 
-# 2) Dependencies & app key (`artisan` requires `vendor/`)
+# 2) Dependencies (`artisan` requires `vendor/`)
 docker compose exec app composer install
-docker compose exec app php artisan key:generate
 
-# 3) Database (creates `jobs`, `cache`, `sessions`, etc. — run before relying on the queue worker)
+# 3) Apply encryption key from entrypoint (needs vendor + restart so PHP-FPM picks up `.env`)
+docker compose restart app queue
+
+# 4) Database (creates `sessions`, `jobs`, etc.)
 docker compose exec app php artisan migrate --seed
 
-# 4) Frontend (production asset build — served by Vite-manifest from public/build)
+# 5) Frontend (production asset build — served from `public/build`)
 docker compose exec app npm install
 docker compose exec app npm run build
 ```
-
-If you prefer to start Compose before editing secrets, copy **`.env.example`** to **`.env`** first (`touch .env` is enough so Compose starts), then set **`DB_HOST=mysql`**, **`DB_DATABASE=laravel`**, **`DB_USERNAME=laravel`**, **`DB_PASSWORD=laravel_secret`**, **`APP_URL=http://localhost:8080`**, and **`SANCTUM_STATEFUL_DOMAINS`** as in **`docker/env.docker.example`** before running **`migrate`**.
 
 Open **http://localhost:8080**. Seeded logins: **`admin@example.com` / `password`**, **`auditor@example.com` / `password`**.
 
@@ -56,8 +56,9 @@ Open **http://localhost:8080**. Seeded logins: **`admin@example.com` / `password
 
 ### Environment variables (Docker)
 
-- Copy **`docker/env.docker.example`** → **`.env`** (or merge DB / `APP_URL` / `SANCTUM_STATEFUL_DOMAINS` into `.env`). Use **`DB_CONNECTION=mysql`** — do not keep **`DB_CONNECTION=sqlite`** from **`.env.example`** when running against the Compose MySQL service.
-- MySQL in Compose uses database **`laravel`**, user **`laravel`**, password **`laravel_secret`** (matches the example file). Change both **`.env`** and **`docker-compose.yml`** if you customize credentials.
+- Copy **`.env.example`** → **`.env`** (duplicate: **`docker/env.docker.example`**). **`DB_CONNECTION=mysql`**, **`DB_HOST=mysql`**, **`SESSION_DRIVER=database`**, **`QUEUE_CONNECTION=database`**, **`CACHE_STORE=file`** (file cache lets the queue worker boot before migrations; sessions still use MySQL after migrate).
+- **`APP_KEY=`** is present but empty in **`.env.example`**. The PHP image **entrypoint** unsets an empty **`APP_KEY`** in the process environment (otherwise Docker’s env would override the key on disk) and runs **`php artisan key:generate`** once **`vendor/`** exists. **`docker compose restart app queue`** after **`composer install`** applies it.
+- MySQL in Compose uses database **`laravel`**, user **`laravel`**, password **`laravel_secret`**. Change both **`.env`** and **`docker-compose.yml`** if you customize credentials.
 - Ports: **`DOCKER_WEB_PORT`** (default `8080`), **`DOCKER_MYSQL_PORT`** (default **`3307`** — avoids clashes with a host MySQL on 3306), **`DOCKER_VITE_PORT`** (default `5173`). Inside Compose, Laravel still uses **`DB_HOST=mysql`** and **`DB_PORT=3306`** (container port).
 
 ### Queue worker (PDF exports)
@@ -78,7 +79,7 @@ Production evaluators can rely on **`npm run build`** only. For HMR:
 docker compose --profile vite up -d
 ```
 
-The Vite container sets **`DOCKER_VITE=1`** so `vite.config.js` listens on `0.0.0.0` and uses polling for bind mounts. Use **`APP_URL=http://localhost:8080`** and include **`localhost:5173`** in **`SANCTUM_STATEFUL_DOMAINS`** (see `docker/env.docker.example`).
+The Vite container sets **`DOCKER_VITE=1`** so `vite.config.js` listens on `0.0.0.0` and uses polling for bind mounts. Use **`APP_URL=http://localhost:8080`**. Append **`localhost:5173`** and **`127.0.0.1:5173`** to **`SANCTUM_STATEFUL_DOMAINS`** in **`.env`** if you use this profile (production builds do not need this).
 
 ### Useful commands
 
@@ -96,6 +97,7 @@ docker compose down               # stop; add -v to drop MySQL volume
 | **Port 8080 / 3307 / 5173 in use** | `export DOCKER_WEB_PORT=18080 DOCKER_MYSQL_PORT=13306 DOCKER_VITE_PORT=25173` then `docker compose up -d`. To expose MySQL on host **3306** instead of **3307**: `DOCKER_MYSQL_PORT=3306` (requires nothing else listening on 3306). |
 | **`Connection refused` to MySQL** | Wait for healthcheck (`docker compose ps`); ensure `.env` has `DB_HOST=mysql` |
 | **403 / CSRF / login issues** | Set **`APP_URL`** to the URL you use (**`http://localhost:8080`**) and widen **`SANCTUM_STATEFUL_DOMAINS`** |
+| **`No application encryption key`** / HTTP 500 | Run **`composer install`**, then **`docker compose restart app queue`** (entrypoint generates **`APP_KEY`**). Ensure **`.env`** still contains an **`APP_KEY=`** line for Laravel to replace. |
 | **Permission errors on `storage/`** | `docker compose exec app chown -R www-data:www-data storage bootstrap/cache` |
 | **Blank page / no CSS** | Run **`npm run build`** inside **`app`**, or enable **`vite`** profile |
 | **Queued PDFs never finish** | Run **`migrate`** first so the **`jobs`** table exists; check **`queue`** logs. Run `docker compose restart queue` |
@@ -109,11 +111,13 @@ docker compose down               # stop; add -v to drop MySQL volume
 
 ## Setup instructions (native PHP — without Docker)
 
+**`.env.example`** targets **Docker Compose** (MySQL). For local **`php artisan serve`** you must adjust database settings after copying.
+
 ### Requirements
 
 - PHP **8.3+**
 - Composer
-- SQLite (default) or MySQL/Postgres
+- SQLite **or** a reachable MySQL server
 
 ### Install dependencies
 
@@ -123,24 +127,22 @@ cp .env.example .env
 php artisan key:generate
 ```
 
-## Environment setup
+### Environment setup (native)
 
-This project defaults to **SQLite**.
-
-### SQLite (recommended for local/dev)
+Replace the **`DB_*`** block in **`.env`** for SQLite, for example:
 
 ```bash
 touch database/database.sqlite
 ```
 
-In `.env`:
-
 ```env
 DB_CONNECTION=sqlite
-DB_DATABASE=/absolute/path/to/database/database.sqlite
+DB_DATABASE=/absolute/path/to/project/database/database.sqlite
 ```
 
-> If you omit `DB_DATABASE`, Laravel will default to `database/database.sqlite`.
+> If you omit `DB_DATABASE`, Laravel defaults to **`database/database.sqlite`**. Remove or override **`DB_HOST`**, **`DB_USERNAME`**, etc., so they are not used for SQLite.
+
+Keep **`SESSION_DRIVER=database`**, **`CACHE_STORE=database`**, and **`QUEUE_CONNECTION=database`** only if you run migrations (SQLite file will hold those tables); otherwise you may switch **`SESSION_DRIVER=file`** and **`CACHE_STORE=file`** for a lighter local setup.
 
 ## Migration steps
 
@@ -381,8 +383,8 @@ Checklist completion flow:
 
 ## Submission checklist (evaluators)
 
-1. **`.env`**: Docker → copy **`docker/env.docker.example`**; native → copy **`.env.example`** (see setup sections above).
-2. **Dependencies & DB**: **`composer install`**, **`php artisan key:generate`**, **`php artisan migrate --seed`** (Docker: use **First-time setup** commands).
+1. **`.env`**: Copy **`.env.example`** → **`.env`** (Docker defaults). Native SQLite setup: see **Setup instructions (native PHP)** above.
+2. **Dependencies & DB**: **`composer install`**, **`docker compose restart app queue`** (Docker — applies **`APP_KEY`**), **`php artisan migrate --seed`** (Docker: use **First-time setup** commands).
 3. **Assets**: **`npm install`** && **`npm run build`** (in **`app`** container if using Docker).
 4. **Smoke test**: **http://localhost:8080** — **`admin@example.com` / `password`** (see **Test credentials**).
 5. **Tests**: **`php artisan test`** (PHPUnit uses SQLite **`:memory:`** from **`phpunit.xml`**, not your MySQL `.env`).
